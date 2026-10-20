@@ -1,0 +1,268 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>傅立葉猜圖</title>
+<style>
+*{box-sizing:border-box}[hidden]{display:none!important}
+:root{--bg:#07070f;--pn:#12122a;--tx:#e8ecff;--mu:#8a90b8;--c1:#19f3ff;--c2:#ff3df0;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--tx);font:15px/1.5 "Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif}
+h1{margin:0 0 4px;font-size:28px;color:var(--c1);text-shadow:0 0 12px var(--c1)}
+button{background:transparent;color:var(--c1);border:1.5px solid var(--c1);border-radius:8px;padding:8px 14px;font:inherit;box-shadow:0 0 8px #19f3ff44;cursor:pointer}
+button.g{color:var(--mu);border-color:#3a3f66;box-shadow:none}
+input,select{background:var(--pn);color:var(--tx);border:1px solid #2c3060;border-radius:8px;padding:8px 10px;font:inherit;min-width:0}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0}
+#lobby{max-width:420px;margin:auto;padding:28px 18px;display:flex;flex-direction:column;gap:10px}
+#lobby p,small{color:var(--mu);margin:0}
+#game{display:flex;flex-direction:column;height:100%;padding:8px;gap:8px;max-width:1100px;margin:auto}
+#top{display:flex;gap:8px;align-items:center;justify-content:space-between}
+#pl{flex:1;display:flex;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--mu)}
+#pl b{color:var(--c2)}
+#stage{position:relative;flex:none;width:min(100%,calc(58dvh*.75));aspect-ratio:3/4;margin:0 auto;background:var(--pn);border-radius:12px;overflow:hidden}#hint{position:absolute;top:8px;right:10px;color:#ffe83d;font-size:13px;text-shadow:0 0 8px #ffe83d}.ok{color:#47ff8a}.no{color:#ff5a6e}#game.wt #stage,#game.wt #log{display:none}#game.lk details,#game.nh details{display:none}
+#stage canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+#ban{position:absolute;left:0;right:0;bottom:0;padding:10px;text-align:center;background:#07070fcc;color:#ffe83d;font-size:18px;text-shadow:0 0 10px #ffe83d}
+#side{max-height:44%;overflow:auto}
+#log{font-size:13px;color:var(--mu);max-height:110px;overflow:auto}
+#log b{color:var(--tx)}
+.sw{width:30px;height:30px;padding:0;border-radius:50%;border:2px solid transparent;box-shadow:none}
+.sw.on{border-color:#fff}
+summary{color:var(--mu);cursor:pointer;margin-top:6px}
+@media(min-width:900px){#game{display:grid;grid-template-columns:1fr 340px;grid-template-rows:auto 1fr}#stage{width:100%;aspect-ratio:auto;height:100%}#top{grid-column:1/3}#side{max-height:none}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style></head><body>
+<div id="lobby">
+<h1>傅立葉猜圖</h1>
+<p>一條線，疊上一個個旋轉的圓，猜猜它畫的是什麼。</p>
+<input id="nm" placeholder="你的暱稱" maxlength="8">
+<input id="rm" placeholder="房間名稱（英文或數字）" maxlength="20">
+<div class="row"><button id="bc">建立房間</button><button id="bj" class="g">加入房間</button><button id="bs" class="g">單機練習</button></div>
+<small id="lm"></small>
+</div>
+<div id="game" hidden>
+<div id="top"><b id="ti"></b><div id="pl"></div><button id="bsh" class="g">分享</button><button id="bx" class="g">離開</button></div>
+<div id="stage"><canvas id="cv"></canvas><canvas id="pad" hidden></canvas><div id="ban" hidden></div><div id="hint"></div></div>
+<div id="side"><div id="ctl"></div><div id="log"></div>
+<details><summary>設置</summary>
+<div class="row">筆數上限<select id="cap"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select>
+加階<select id="adv"><option value="a">自動計時</option><option value="m">出題者手動</option></select></div>
+<div class="row">階數排序<select id="srt"><option value="amp">依振幅</option><option value="frq">依頻率</option></select>
+圓臂<select id="dsp"><option value="all">顯示全部</option><option value="cur">只亮當前階</option><option value="none">不顯示</option></select></div>
+<div class="row">最高難度<select id="lv"><option value="0">簡單</option><option value="1" selected>普通</option><option value="2">困難</option></select>
+每輪秒數<input id="tt" type="number" value="4" min="2" max="10" style="width:64px"></div>
+<div class="row">光暈<input id="glw" type="range" min="0" max="30" value="14"></div><div class="row"><label><input type="checkbox" id="hl"> 提示字數</label><label><input type="checkbox" id="hc"> 提示類別</label><label><input type="checkbox" id="sg" checked> 公開猜測內容</label></div>
+</details></div>
+</div>
+<script>
+const $=i=>document.getElementById(i),g=i=>HC&&i in HC?HC[i]:($(i).type=='checkbox'?$(i).checked:$(i).value);
+const COLS=['#19f3ff','#ff3df0','#ffe83d','#47ff8a','#ff8a3d'],N=256,M=240,K=120;
+const sh=(f,n=120)=>Array.from({length:n},(_,i)=>f(i/n*2*Math.PI));
+const ITEMS=[
+{n:'愛心',al:['心','紅心'],lv:0,s:()=>[sh(t=>[16*Math.sin(t)**3,-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))])]},
+{n:'星星',al:['星','五角星'],lv:0,s:()=>[Array.from({length:11},(_,i)=>{const a=i*Math.PI/5-Math.PI/2,r=i%2?.4:1;return[r*Math.cos(a),r*Math.sin(a)]})]},
+{n:'房子',al:['房屋','屋子','家'],lv:0,s:()=>[[[-.8,.8],[-.8,-.1],[0,-.9],[.8,-.1],[.8,.8],[-.8,.8]],[[-.2,.8],[-.2,.3],[.2,.3],[.2,.8]]]},
+{n:'閃電',al:['雷電','閃光'],lv:1,s:()=>[[[.2,-1],[-.5,.1],[-.05,.1],[-.25,1],[.5,-.2],[.05,-.2],[.2,-1]]]}];
+const WORDS=[['貓|貓咪',1],['蘋果',0],['腳踏車|單車|自行車',1],['吉他',1],['雨傘|傘',0],['茶杯|杯子',0],['魚',0],['樹',0],['蝸牛',2],['風車',2],['仙人掌',2]].map(([a,l])=>{const x=a.split('|');return{n:x[0],al:x.slice(1),lv:l}});
+let R=null,ME='',sc=0,S={mode:'idle'},strokes=[],ci=0,cur=[],shown=[],last=-1,dr=0,lastG=0,topic=null;
+const cv=$('cv'),pad=$('pad'),rnd=a=>a[Math.floor(Math.random()*a.length)];
+
+function prep(st){
+ const V=[];st.forEach(s=>s.p.forEach((q,i)=>V.push({x:q[0],y:q[1],c:i<s.p.length-1?s.c+1:0})));
+ if(V.length<3)return null;
+ const xs=V.map(v=>v.x),ys=V.map(v=>v.y),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),sk=2/Math.max(x1-x0,y1-y0,1e-6);
+ V.forEach(v=>{v.x=(v.x-(x0+x1)/2)*sk;v.y=(v.y-(y0+y1)/2)*sk});
+ const L=[0];for(let i=0;i<V.length;i++){const a=V[i],b=V[(i+1)%V.length];L.push(L[i]+Math.hypot(b.x-a.x,b.y-a.y))}
+ const T=L[V.length];if(T<.05)return null;
+ const Z=[],fl=[];let j=0;
+ for(let i=0;i<N;i++){const s=i*T/N;while(L[j+1]<s)j++;const a=V[j],b=V[(j+1)%V.length],u=(s-L[j])/((L[j+1]-L[j])||1);Z.push([a.x+(b.x-a.x)*u,a.y+(b.y-a.y)*u]);fl.push(a.c)}
+ const cs=[];
+ for(let k=-K;k<=K;k++){let re=0,im=0;for(let i=0;i<N;i++){const a=-2*Math.PI*k*i/N,co=Math.cos(a),si=Math.sin(a);re+=Z[i][0]*co-Z[i][1]*si;im+=Z[i][0]*si+Z[i][1]*co}cs.push({k,re:re/N,im:im/N,a:Math.hypot(re,im)/N})}
+ return{fl:fl.join(''),cs,og:Z.map((p,i)=>({x:p[0],y:p[1],c:fl[i]}))};
+}
+const pn=n=>n<=8?n:Math.min(60,Math.round(8*1.5**(n-8)));const CAT={貓:'動物',蘋果:'食物',腳踏車:'交通工具',吉他:'樂器',雨傘:'日常物品',茶杯:'日常物品',魚:'動物',樹:'植物',蝸牛:'動物',風車:'建築',仙人掌:'植物',愛心:'形狀',星星:'形狀',房子:'建築',閃電:'自然'};
+function circ(cs,n){
+ const a=cs.filter(c=>c.k).sort(g('srt')=='amp'?(p,q)=>q.a-p.a:(p,q)=>Math.abs(p.k)-Math.abs(q.k)||p.k-q.k),c0=cs.find(c=>!c.k);
+ return[[0,c0.re,c0.im],...a.slice(0,2*pn(n)).sort((p,q)=>q.a-p.a).map(c=>[c.k,+c.re.toFixed(3),+c.im.toFixed(3)])];
+}
+function chain(c,t){let x=0,y=0;const o=[[0,0]];for(const[k,re,im]of c){const a=2*Math.PI*k*t,co=Math.cos(a),si=Math.sin(a);x+=re*co-im*si;y+=re*si+im*co;o.push([x,y,Math.hypot(re,im)])}return o}
+function curve(c){return Array.from({length:M},(_,j)=>{const o=chain(c,j/M),p=o[o.length-1];return{x:p[0],y:p[1],c:+S.fl[Math.floor(j*N/M)]}})}
+function setN(n){S.n=n;S.cc=circ(S.cs,n);cur=curve(S.cc)}
+
+const hint=()=>[g('hl')?[...S.ans].length+'個字':'',g('hc')?(CAT[S.ans]||'自訂'):''].filter(Boolean).join('・');
+function send(){R&&R.emit('st',{rid:S.rid,fl:S.fl,n:S.n,c:S.cc,el:Date.now()-S.t0,T:S.T,mx:S.mx,m:S.mult,h:hint(),sg:S.sg}).catch(()=>{})}
+function start(st,it){
+ const d=prep(st);if(!d){flash('線條太短，再畫一次');return}
+ Object.assign(S,{mode:'run',own:1,rid:Math.random().toString(36).slice(2,8),fl:d.fl,cs:d.cs,mx:13,og:d.og,sg:g('sg'),T:Math.max(2,+g('tt')||4),t0:Date.now(),al:[it.n,...it.al].map(s=>s.toLowerCase()),ans:it.n,mult:[1,1.5,2][it.lv],fc:undefined});
+ shown=[];last=-1;$('log').innerHTML='';$('hint').textContent=S.solo?hint():'';setN(1);send();ui();
+}
+function pts(){const e=Date.now()-S.t0;return Math.round(100*S.mult*(1-.6*(S.n-1)/S.mx)*(1-.3*Math.min(1,e/(S.T*1000*(S.mx+1)))))}
+function okG(tx){tx=tx.trim().toLowerCase();return tx&&S.al.some(a=>tx===a||(a.length>1&&tx.includes(a)))}
+function finish(ok,nm,who){
+ if(S.mode!='run')return;
+ const p=ok?pts():0;S.mode='end';
+ if(ok&&(S.solo||S.own)){sc+=p;R&&R.presence({sc})}
+ if(R&&S.own)R.emit('r',{rid:S.rid,ok,who,nm,pts:p,ans:S.ans,og:S.og.filter((_,i)=>i%2==0).map(v=>[+v.x.toFixed(2),+v.y.toFixed(2),+v.c])}).catch(()=>{});
+ ban(ok?`答案：${S.ans}　${nm} 猜中，各得 ${p} 分`:`沒人猜中，答案是：${S.ans}`);ui();
+}
+const cols=(tx,ok)=>[...tx].map(ch=>ok||S.ans.includes(ch)?1:0).join('');
+function addG(d){const l=$('log'),r=document.createElement('div'),b=document.createElement('b');b.textContent=d.nm+'：';r.append(b);[...d.tx].forEach((ch,i)=>{const s=document.createElement('span');s.className=d.cs[i]=='1'?'ok':'no';s.textContent=d.h&&d.nm!==ME?'*':ch;r.append(s)});l.append(r);l.scrollTop=l.scrollHeight}
+function ban(t){const b=$('ban');b.textContent=t;b.hidden=!t}
+function flash(t){$('lm').textContent=t;const c=$('ctl').querySelector('.msg');if(c)c.textContent=t}
+function addLog(n,t){const l=$('log'),d=document.createElement('div'),b=document.createElement('b');b.textContent=n;d.append(b,'：'+t);l.append(d);l.scrollTop=l.scrollHeight}
+const me=()=>R&&(R.peers().find(p=>p.isMe)||{}).peer;
+
+function ui(){
+ const c=$('ctl'),m=S.mode;let h='';if(R&&PH=='lobby'){c.innerHTML=HOST?'<div class="row"><button data-a="begin">開始遊戲</button></div><small>先在下方調整設置，再開始。</small>':'<small>等待房主開始遊戲…</small>';return}
+ pad.hidden=m!='setup';cv.hidden=m=='setup';ban(m=='end'?$('ban').textContent:'');
+ if(m=='idle'||m=='end')h=S.solo||!R?'<button data-a="solo">'+(m=='end'?'下一題':'開始')+'</button>':'<button data-a="pick">我來出題</button>';
+ else if(m=='pick')h='<div class="row"><input id="tp" placeholder="自訂題目（空白＝隨機）" maxlength="10"><select id="src"><option value="d">手繪</option><option value="l">圖庫</option></select><button data-a="ok">確定</button></div>';
+ else if(m=='setup')h=`<div class="row">題目：<b>${S.item.n}</b>（只有你看得到）<span id="rs"></span></div><div class="row">${COLS.map((x,i)=>`<button class="sw${i==ci?' on':''}" data-a="col" data-i="${i}" style="background:${x}"></button>`).join('')}</div><div class="row"><button class="g" data-a="undo">撤銷</button><button class="g" data-a="clr">清除</button><button data-a="go">開始演出</button></div>`;
+ else if(m=='run'&&S.own&&!S.solo)h=(g('adv')=='m'?'<button data-a="up">加一階</button> ':'')+'<button class="g" data-a="end">結束</button>';
+ else if(m=='run')h='<div class="row"><input id="gi" placeholder="輸入你的猜測" maxlength="12"><button data-a="gs">猜</button>'+(S.solo?'<button class="g" data-a="end">放棄</button>':'')+'</div>';
+ c.innerHTML=h+(R&&HOST?' <button class="g" data-a="stop">結束本局遊戲</button>':'')+'<div class="msg" style="color:#ffe83d;min-height:1.2em"></div>';
+ if(m=='setup')drawPad();
+}
+const act={
+ begin(){PH='play';pub();applyPh()},stop(){PH='lobby';pub();applyPh()},
+ solo(){S.solo=1;const it=rnd(ITEMS.filter(i=>i.lv<=+g('lv')));S.item=it;start(it.s().map((p,i)=>({p:p.slice(),c:i%5})),it)},
+ pick(){S.mode='pick';ui()},
+ ok(){
+  const v=$('tp').value.trim(),lv=+g('lv'),pool=[...ITEMS,...WORDS].filter(i=>i.lv<=lv);
+  if($('src').value=='l'){const it=rnd(ITEMS.filter(i=>i.lv<=lv));S.solo=0;return start(it.s().map((p,i)=>({p:p.slice(),c:i%5})),it)}
+  S.item=v?{n:v,al:[],lv}:rnd(pool);S.solo=0;strokes=[];S.mode='setup';ui();
+ },
+ col(b){ci=+b.dataset.i;ui()},undo(){strokes.pop();drawPad()},clr(){strokes=[];drawPad()},
+ go(){start(strokes.map(s=>({p:s.p,c:s.c})),S.item)},
+ up(){if(S.n<S.mx){setN(S.n+1);send()}},
+ end(){finish(false)},
+ gs(){
+  const i=$('gi'),tx=i.value.trim();if(!tx||Date.now()-lastG<1500)return;lastG=Date.now();i.value='';
+  if(S.solo){const ok=okG(tx);addG({nm:'你',tx,cs:cols(tx,ok)});if(ok)finish(true,'你')}
+  else R&&R.emit('g',{rid:S.rid,nm:ME,tx}).catch(()=>{});
+ }};
+$('ctl').addEventListener('click',e=>{const b=e.target.closest('[data-a]');b&&act[b.dataset.a](b)});
+$('ctl').addEventListener('keydown',e=>{if(e.key=='Enter'&&e.target.id=='gi')act.gs()});
+
+function drawPad(){const rs=$('rs');if(rs)rs.textContent='　剩 '+(+g('cap')-strokes.length)+' 筆';
+ const x=pad.getContext('2d'),dp=devicePixelRatio;x.setTransform(dp,0,0,dp,0,0);x.clearRect(0,0,pad.width,pad.height);
+ x.lineCap=x.lineJoin='round';x.lineWidth=3;
+ strokes.forEach(s=>{x.strokeStyle=x.shadowColor=COLS[s.c];x.shadowBlur=+g('glw');x.beginPath();s.p.forEach((q,i)=>i?x.lineTo(q[0],q[1]):x.moveTo(q[0],q[1]));x.stroke()});
+}
+const pt=e=>{const r=pad.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]};
+pad.onpointerdown=e=>{if(strokes.length>=+g('cap')){flash('筆數已達上限，可先撤銷');return}pad.setPointerCapture(e.pointerId);dr=1;strokes.push({p:[pt(e)],c:ci});drawPad()};
+pad.onpointermove=e=>{if(!dr)return;const s=strokes[strokes.length-1],q=pt(e),l=s.p[s.p.length-1];if(Math.hypot(q[0]-l[0],q[1]-l[1])>3){s.p.push(q);drawPad()}};
+pad.onpointerup=pad.onpointercancel=()=>{dr=0};
+
+function size(){const r=$('stage').getBoundingClientRect(),dp=devicePixelRatio;[cv,pad].forEach(c=>{c.width=r.width*dp;c.height=r.height*dp});if(S.mode=='setup')drawPad()}
+new ResizeObserver(size).observe($('stage'));
+function frame(){
+ requestAnimationFrame(frame);
+ if(S.mode!='run'&&S.mode!='end')return;
+ const T=S.T*1000,e=Date.now()-S.t0,cyc=Math.floor(e/T),t=S.mode=='end'?0:(e%T)/T;
+ if(S.mode=='run'&&S.own){
+  if(g('adv')=='a'){const n=Math.min(S.mx,cyc+1);if(n!=S.n){setN(n);send()}if(cyc>=S.mx+1)return finish(false)}
+  else if(S.n>=S.mx){if(S.fc===undefined)S.fc=cyc;if(cyc>S.fc)return finish(false)}
+ }
+ if(S.mode=='run'){const i=Math.floor(t*M);let s=0;while(last!==i&&s++<M){last=(last+1+M)%M;shown[last]=cur[last]}}
+ draw2(t);
+}
+function draw(t){
+ const w=cv.width,h=cv.height,x=cv.getContext('2d'),dp=devicePixelRatio;x.clearRect(0,0,w,h);if(!S.cc)return;
+ const wide=w>=h*1.5,A=wide?[0,0,w/2,h]:[0,0,w,h*.38],B=wide?[w/2,0,w/2,h]:[0,h*.38,w,h*.62],c=chain(S.cc,t),tip=c[c.length-1],dm=g('dsp'),gl=+g('glw')*dp;
+ x.lineCap=x.lineJoin='round';
+ x.save();x.translate(A[0]+A[2]/2,A[1]+A[3]/2);let k=Math.min(A[2],A[3])*.9/3;x.lineWidth=1.2*dp;x.shadowBlur=gl/2;
+ if(dm!='none')for(let i=1;i<c.length;i++){
+  const a=dm=='cur'&&i<c.length-2?.12:.75;x.globalAlpha=a;
+  x.strokeStyle=x.shadowColor='#19f3ff';x.beginPath();x.arc(c[i-1][0]*k,c[i-1][1]*k,c[i][2]*k,0,7);x.stroke();
+  x.strokeStyle=x.shadowColor='#ff3df0';x.beginPath();x.moveTo(c[i-1][0]*k,c[i-1][1]*k);x.lineTo(c[i][0]*k,c[i][1]*k);x.stroke();
+ }
+ x.globalAlpha=1;x.fillStyle='#fff';x.beginPath();x.arc(tip[0]*k,tip[1]*k,3*dp,0,7);x.fill();x.restore();
+ x.save();x.translate(B[0]+B[2]/2,B[1]+B[3]/2);k=Math.min(B[2],B[3])*.9/2;x.lineWidth=3*dp;x.shadowBlur=gl;
+ let cc=-1;
+ for(let j=0;j<M;j++){
+  const a=shown[j],b=shown[(j+1)%M];
+  if(!a||!b||!a.c||!b.c){if(cc>=0)x.stroke();cc=-1;continue}
+  if(a.c!==cc){if(cc>=0)x.stroke();cc=a.c;x.strokeStyle=x.shadowColor=COLS[cc-1];x.beginPath();x.moveTo(a.x*k,a.y*k)}
+  x.lineTo(b.x*k,b.y*k);
+ }
+ if(cc>=0)x.stroke();
+ x.fillStyle='#fff';x.beginPath();x.arc(tip[0]*k,tip[1]*k,4*dp,0,7);x.fill();x.restore();
+}
+
+function poly(x,a,k,cx,cy,sk){let cc=-1;x.translate(cx,cy);for(let j=0;j<a.length;j++){const p=a[j],q=a[(j+1)%a.length];if(!p||!q||!+p.c||j===sk){if(cc>=0)x.stroke();cc=-1;continue}if(+p.c!==cc){if(cc>=0)x.stroke();cc=+p.c;x.strokeStyle=x.shadowColor=COLS[cc-1];x.beginPath();x.moveTo(p.x*k,p.y*k)}x.lineTo(q.x*k,q.y*k)}if(cc>=0)x.stroke();x.translate(-cx,-cy)}
+function draw2(t){
+ const w=cv.width,h=cv.height,x=cv.getContext('2d'),dp=devicePixelRatio;x.clearRect(0,0,w,h);if(!S.cc)return;
+ const en=S.mode=='end',hid=en||g('dsp')=='none',wide=w>=h*1.5,sp=!hid||en,k=Math.min(sp&&wide?w/2:w,sp&&!wide?h/2:h)*.9/(hid?2:2.2),gl=+g('glw')*dp,
+ A=wide?[w/4,h/2]:[w/2,h/4],B=sp?(wide?[w*3/4,h/2]:[w/2,h*3/4]):[w/2,h/2],c=chain(S.cc,t),tip=c[c.length-1];
+ x.lineCap=x.lineJoin='round';
+ if(!hid){
+  x.save();x.translate(A[0],A[1]);x.lineWidth=1.2*dp;x.shadowBlur=gl/2;const dm=g('dsp');
+  for(let i=1;i<c.length;i++){x.globalAlpha=dm=='cur'&&i<c.length-2?.12:.75;x.strokeStyle=x.shadowColor='#19f3ff';x.beginPath();x.arc(c[i-1][0]*k,c[i-1][1]*k,c[i][2]*k,0,7);x.stroke();x.strokeStyle=x.shadowColor='#ff3df0';x.beginPath();x.moveTo(c[i-1][0]*k,c[i-1][1]*k);x.lineTo(c[i][0]*k,c[i][1]*k);x.stroke()}
+  x.restore();
+  x.strokeStyle='#8a90b8';x.lineWidth=2*dp;x.shadowBlur=0;x.beginPath();x.moveTo(A[0]+tip[0]*k,A[1]+tip[1]*k);x.lineTo(B[0]+tip[0]*k,B[1]+tip[1]*k);x.stroke();
+  x.fillStyle='#fff';x.beginPath();x.arc(A[0]+tip[0]*k,A[1]+tip[1]*k,3*dp,0,7);x.fill();
+ }
+ x.lineWidth=3*dp;x.shadowBlur=gl;
+ if(en&&S.og)poly(x,S.og,k,A[0],A[1]);
+ poly(x,shown,k,B[0],B[1],last);
+ if(!en){x.fillStyle='#fff';x.beginPath();x.arc(B[0]+tip[0]*k,B[1]+tip[1]*k,4*dp,0,7);x.fill()}
+}
+let HC=null,PH='play',HOST=0;
+const cfgs=()=>Object.fromEntries(['cap','adv','srt','lv','tt','hl','hc','sg'].map(i=>[i,$(i).type=='checkbox'?$(i).checked:$(i).value]));
+const pub=()=>R&&HOST&&R.presence({nm:ME,sc,host:1,ph:PH,cfg:cfgs()});
+function applyPh(){$('game').className=(R&&PH=='lobby'?'wt ':'')+(R&&PH!='lobby'?'lk ':'')+(R&&!HOST?'nh':'');document.querySelector('details').open=!!(HOST&&PH=='lobby');if(R&&PH=='lobby'&&S.mode!='idle'){S={mode:'idle'};shown=[];ban('')}ui()}
+function players(){
+ const el=$('pl');
+ if(!R){el.innerHTML='<span><b>你</b> '+sc+'</span>';return}
+ const hp=R.peers().find(p=>p.presence.host&&!p.isMe);if(hp){HC=hp.presence.cfg||null;const np=hp.presence.ph||'lobby';if(np!=PH){PH=np;applyPh()}}
+ el.innerHTML='';
+ R.peers().forEach(p=>{const s=document.createElement('span'),n=(p.presence.nm||'玩家')+'';if(p.isMe){const b=document.createElement('b');b.textContent=n;s.append(b)}else s.append(n);s.append(' '+(p.presence.sc||0));el.append(s)});
+}
+async function enter(room,host){
+ ME=g('nm').trim()||'玩家'+Math.floor(Math.random()*90+10);S={mode:'idle',solo:!room};R=null;RN=room;HOST=0;HC=null;PH='play';
+ if(room){
+  
+  $('lm').textContent='連線中…';
+  try{
+   const rm=window.FB;if(!rm)throw 0;
+   R=await rm.join('fg-'+(room.toLowerCase().replace(/[^a-z0-9_.-]/g,'')||'room1'));
+   PH='lobby';HOST=host?1:0;R.presence({nm:ME,sc:0});pub();R.onPeers(players);
+   R.on('st',m=>{
+    if(m.isMe||S.own)return;const d=m.data;if(!d||!d.c)return;
+    if(d.rid!==S.rid){S={mode:'run',own:0,rid:d.rid,fl:d.fl,T:d.T,mx:d.mx,mult:d.m,sg:d.sg};$('hint').textContent=d.h||'';shown=[];last=-1;$('log').innerHTML='';ban('');ui()}
+    if(d.n!==S.n){S.n=d.n;S.cc=d.c;cur=curve(S.cc)}
+    const t0=Date.now()-d.el;if(!S.t0||Math.abs(t0-S.t0)>400)S.t0=t0;
+   });
+   R.on('g',m=>{const d=m.data;if(!d||d.rid!==S.rid)return;if(d.rep){addG({nm:String(d.nm).slice(0,8),tx:String(d.tx).slice(0,12),cs:String(d.cs),h:d.h});return}
+    if(m.isMe||!S.own||S.mode!='run')return;const tx=String(d.tx).slice(0,12),nm=String(d.nm).slice(0,8),ok=okG(tx);
+    R.emit('g',{rid:S.rid,nm,tx,rep:1,cs:cols(tx,ok),h:!S.sg}).catch(()=>{});if(ok)finish(true,nm,m.peer)});
+   R.on('r',m=>{const d=m.data;if(m.isMe||S.own||!d||d.rid!==S.rid||S.mode!='run')return;S.mode='end';S.og=(d.og||[]).map(v=>({x:v[0],y:v[1],c:v[2]}));
+    if(d.ok&&d.who===me()){sc+=d.pts;R.presence({sc})}
+    ban(d.ok?`答案：${d.ans}　${d.nm} 猜中，各得 ${d.pts} 分`:`沒人猜中，答案是：${d.ans}`);ui()});
+  }catch(e){R=null;$('lm').textContent='無法加入房間，請確認網路後再試，或先單機練習';return}
+ }
+ $('lobby').hidden=true;$('game').hidden=false;$('ti').textContent=room?'房間 '+room:'單機練習';$('bsh').hidden=!room;
+ size();players();applyPh();
+}
+$('bj').onclick=()=>{const r=g('rm').trim();r?enter(r):($('lm').textContent='請輸入房間名稱')};
+$('bs').onclick=()=>enter(null);
+$('bsh').onclick=()=>{const u=location.href.split('#')[0]+'#room='+encodeURIComponent(RN);navigator.clipboard&&navigator.clipboard.writeText(u).catch(()=>{});flash('邀請連結已複製，房間名稱：'+RN)};
+const hm=(location.hash||location.search).match(/room=([\w.-]+)/);if(hm)$('rm').value=hm[1];
+$('bx').onclick=()=>{try{R&&R.leave()}catch(e){}R=null;HOST=0;HC=null;PH='play';$('game').className='';S={mode:'idle'};shown=[];$('game').hidden=true;$('lobby').hidden=false;$('lm').textContent=''};
+document.querySelector('details').addEventListener('change',pub);
+$('bc').onclick=()=>{const r=g('rm').trim();r?enter(r,1):($('lm').textContent='請輸入房間名稱')};
+setInterval(()=>{if(R&&S.own&&S.mode=='run')send()},2000);
+requestAnimationFrame(frame);
+</script>
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+import{getDatabase,ref,set,get,push,remove,onValue,onChildAdded,onDisconnect,query,orderByKey,startAfter,limitToLast}from"https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js";
+const db=getDatabase(initializeApp({apiKey:"AIzaSyBxM53Ez9o-d3Eptw0jIMPpBKjI3XzVjKY",authDomain:"fourier-a6fad.firebaseapp.com",databaseURL:"https://fourier-a6fad-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"fourier-a6fad",appId:"1:261825878308:web:83792ab6407d1fb043bbb1"}));
+window.FB={async join(name){
+ const id=Math.random().toString(36).slice(2,10),base='rooms/'+name,pr=ref(db,base+'/p/'+id),ev=ref(db,base+'/ev'),hs={},ps=[],P={},un=[];let peers=[];
+ onDisconnect(pr).remove();
+ un.push(onValue(ref(db,base+'/p'),s=>{const v=s.val()||{};peers=Object.keys(v).map(k=>({peer:k,isMe:k==id,presence:v[k]||{}}));ps.forEach(f=>f(peers))}));
+ let lk=null;(await get(query(ev,limitToLast(1)))).forEach(c=>{lk=c.key});
+ un.push(onChildAdded(lk?query(ev,orderByKey(),startAfter(lk)):ev,s=>{const m=s.val();(hs[m.t]||[]).forEach(f=>f({data:m.d,isMe:m.by==id,peer:m.by}))}));
+ return{peers:()=>peers,presence(p){Object.assign(P,p);return set(pr,JSON.parse(JSON.stringify(P)))},onPeers(f){ps.push(f);f(peers)},on(t,f){(hs[t]=hs[t]||[]).push(f)},async emit(t,d){const r=push(ev);await set(r,{t,d:JSON.parse(JSON.stringify(d)),by:id});setTimeout(()=>remove(r),20000)},leave(){un.forEach(f=>f());remove(pr)}}
+}};
+</script>
+</body></html>
