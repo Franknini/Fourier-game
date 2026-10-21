@@ -14,10 +14,10 @@ input,select{background:var(--pn);color:var(--tx);border:1px solid #2c3060;borde
 #lobby{max-width:420px;margin:auto;padding:28px 18px;display:flex;flex-direction:column;gap:10px}
 #lobby p,small{color:var(--mu);margin:0}
 #game{display:flex;flex-direction:column;height:100%;padding:8px 0;gap:8px;max-width:1100px;margin:auto}
-#top{padding:0 8px;display:flex;gap:8px;align-items:center;justify-content:space-between}
+#top{position:relative;padding:0 8px;display:flex;gap:8px;align-items:center;justify-content:space-between}
 #pl{flex:1;display:flex;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--mu)}
 #pl b{color:var(--c2)}
-#stage{position:relative;flex:none;width:100%;aspect-ratio:3/4;max-height:64dvh;margin:0;background:var(--pn);border-radius:12px;overflow:hidden}#hint{position:absolute;top:8px;right:10px;color:#ffe83d;font-size:13px;text-shadow:0 0 8px #ffe83d}.ok{color:#47ff8a}.no{color:#ff5a6e}#game.wt #stage,#game.wt #log{display:none}#game.lk details,#game.nh details{display:none}
+#stage{position:relative;flex:none;width:100%;aspect-ratio:3/4;max-height:64dvh;margin:0;background:var(--pn);border-radius:12px;overflow:hidden}#hint{position:absolute;top:8px;right:10px;color:#ffe83d;font-size:13px;text-shadow:0 0 8px #ffe83d}.ok{color:#47ff8a}.no{color:#ff5a6e}#game.wt #stage,#game.wt #log{display:none}#game.wt #side{max-height:none;flex:1}#plp{display:none;position:absolute;left:8px;right:8px;top:100%;z-index:20;background:#12122aee;border:1px solid #2c3060;border-radius:10px;padding:8px;flex-direction:column;gap:6px;max-height:60dvh;overflow:auto}#plp.on{display:flex}#plp span{display:flex;align-items:center;gap:6px;font-size:15px}.pu{animation:pu 1.2s ease-in-out infinite}@keyframes pu{50%{transform:scale(1.12)}}#ov{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:#07070fe8;font-size:24px;text-align:center}#ov[hidden]{display:none}#ov b{font-size:40px;color:var(--c1)}#game.lk details,#game.nh details{display:none}
 #stage canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
 #ban{position:absolute;left:0;right:0;bottom:0;padding:10px;text-align:center;background:#07070fcc;color:#ffe83d;font-size:18px;text-shadow:0 0 10px #ffe83d}
 #side{max-height:44%;overflow:auto;padding:0 8px}#nx{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:22px;padding:14px 28px;background:#07070fdd;animation:pl 1.2s ease-in-out infinite}@keyframes pl{50%{transform:translate(-50%,-50%) scale(1.15)}}
@@ -38,15 +38,15 @@ summary{color:var(--mu);cursor:pointer;margin-top:6px}
 <small id="lm"></small>
 </div>
 <div id="game" hidden>
-<div id="top"><b id="ti"></b><div id="pl"></div><button id="bsh" class="g">分享</button><button id="bx" class="g">離開</button></div>
-<div id="stage"><canvas id="cv"></canvas><canvas id="pad" hidden></canvas><div id="ban" hidden></div><div id="hint"></div><button id="nx" hidden>下一題</button></div>
+<div id="top"><b id="ti"></b><div id="pl"><button id="plb" class="g">玩家 ▾</button><div id="plp"></div></div><button id="bsh" class="g">分享</button><button id="bx" class="g">離開</button></div>
+<div id="stage"><canvas id="cv"></canvas><canvas id="pad" hidden></canvas><div id="ban" hidden></div><div id="hint"></div><button id="nx" hidden>下一題</button><div id="ov" hidden></div></div>
 <div id="side"><div id="ctl"></div><textarea id="cpt" hidden rows="4" style="width:100%"></textarea><div id="log"></div>
 <details><summary>設置</summary>
 <div class="row">簡單題筆數上限<input id="cap" type="number" min="0" value="3" style="width:64px">（0＝不限；普通題自動+1，困難題自動+3）
 加階<select id="adv"><option value="a">自動計時</option><option value="m">出題者手動</option></select></div>
 <div class="row">階數排序<select id="srt"><option value="amp">依振幅</option><option value="frq">依頻率</option></select>
 圓臂<select id="dsp"><option value="all">顯示全部</option><option value="cur">只亮當前階</option><option value="none">不顯示</option></select></div>
-<div class="row">出題方式<select id="md"><option value="bank">題庫出題</option><option value="turn">輪流手繪（開發中）</option></select></div><div class="row">最高難度<select id="lv"><option value="0">簡單</option><option value="1" selected>普通</option><option value="2">困難</option></select>
+<div class="row">出題方式<select id="md"><option value="bank">題庫出題</option><option value="turn">輪流手繪出題</option></select></div><div class="row">最高難度<select id="lv"><option value="0">簡單</option><option value="1" selected>普通</option><option value="2">困難</option></select>
 每輪秒數<input id="tt" type="number" value="4" min="2" max="10" style="width:64px"></div>
 <div class="row">光暈<input id="glw" type="range" min="0" max="30" value="14"></div><div class="row"><label><input type="checkbox" id="hl"> 提示字數</label><label><input type="checkbox" id="hc"> 提示類別</label><label><input type="checkbox" id="sg" checked> 公開猜測內容</label></div>
 </details></div>
@@ -100,17 +100,17 @@ const hint=()=>[g('hl')?[...S.ans].length+'個字':'',g('hc')?(CAT[S.ans]||'自�
 function send(){R&&R.emit('st',{rid:S.rid,fl:S.fl,n:S.n,c:S.cc,el:Date.now()-S.t0,T:S.T,mx:S.mx,m:S.mult,h:hint(),sg:S.sg}).catch(()=>{})}
 function start(st,it){
  const d=prep(st);if(!d){flash('線條太短，再畫一次');return}
- Object.assign(S,{mode:'run',own:1,rid:Math.random().toString(36).slice(2,8),fl:d.fl,cs:d.cs,mx:13,og:d.og,sg:g('sg'),vm:!R&&!S.solo?1:0,v:0,sp:1,lt:performance.now(),T:Math.max(2,+g('tt')||4),t0:Date.now(),al:[it.n,...it.al].map(s=>s.toLowerCase()),ans:it.n,mult:[1,1.5,2][it.lv],fc:undefined});
- shown=[];last=-1;$('log').innerHTML='';$('hint').textContent=S.solo?hint():'';setN(1);send();ui();
+ Object.assign(S,{mode:'run',own:1,rid:Math.random().toString(36).slice(2,8),fl:d.fl,cs:d.cs,mx:13,bank:S.bk?1:0,og:d.og,sg:g('sg'),vm:!R&&!S.solo?1:0,v:0,sp:1,lt:performance.now(),T:Math.max(2,+g('tt')||4),t0:Date.now(),al:[it.n,...it.al].map(s=>s.toLowerCase()),ans:it.n,mult:[1,1.5,2][it.lv],fc:undefined});
+ shown=[];last=-1;$('log').innerHTML='';$('hint').textContent=S.solo||S.bk?hint():'';setN(1);send();S.bk=0;ui();
 }
 function pts(){const e=Date.now()-S.t0;return Math.round(100*S.mult*(1-.6*(S.n-1)/S.mx)*(1-.3*Math.min(1,e/(S.T*1000*(S.mx+1)))))}
 function okG(tx){tx=tx.trim().toLowerCase();return tx&&S.al.some(a=>tx===a||(a.length>1&&tx.includes(a)))}
 function finish(ok,nm,who){
  if(S.mode!='run')return;
  const p=ok?pts():0;S.mode='end';
- if(ok&&(S.solo||(S.own&&g('md')!='bank'))){sc+=p;R&&R.presence({sc})}
+ if(ok&&(S.solo||(S.own&&(g('md')!='bank'||who===me())))){sc+=p;R&&R.presence({sc})}
  if(R&&S.own)R.emit('r',{rid:S.rid,ok,who,nm,pts:p,ans:S.ans,og:S.og.filter((_,i)=>i%2==0).map(v=>[+v.x.toFixed(2),+v.y.toFixed(2),+v.c])}).catch(()=>{});
- ban(ok?`答案：${S.ans}　${nm} 猜中，得 ${p} 分`:(R||S.solo?`沒人猜中，答案是：${S.ans}`:`演示結束，題目是：${S.ans}`));ui();
+ ban(ok?`答案：${S.ans}　${nm} 猜中，得 ${p} 分`:(R||S.solo?`沒人猜中，答案是：${S.ans}`:`演示結束，題目是：${S.ans}`));ui();if(R&&HOST&&g('md')=='turn')tAfter();
 }
 const cols=(tx,ok)=>[...tx].map(ch=>ok||S.ans.includes(ch)?1:0).join('');
 function addG(d){const l=$('log'),r=document.createElement('div'),b=document.createElement('b');b.textContent=d.nm+'：';r.append(b);[...d.tx].forEach((ch,i)=>{const s=document.createElement('span');s.className=d.cs[i]=='1'?'ok':'no';s.textContent=d.h&&d.nm!==ME?'*':ch;r.append(s)});l.append(r);l.scrollTop=l.scrollHeight}
@@ -120,21 +120,21 @@ function addLog(n,t){const l=$('log'),d=document.createElement('div'),b=document
 const me=()=>R&&(R.peers().find(p=>p.isMe)||{}).peer;
 
 function ui(){
- const c=$('ctl'),m=S.mode;let h='';$('nx').hidden=!(R&&HOST&&PH=='play'&&m=='end'&&g('md')=='bank');if(R&&PH=='lobby'){c.innerHTML=HOST?'<div class="row"><button data-a="begin">開始遊戲</button></div><small>先在下方調整設置，再開始。</small>':'<small>等待房主開始遊戲…</small>';return}
+ const c=$('ctl'),m=S.mode;let h='';if(R&&PH=='lobby'){c.innerHTML=HOST?'<div class="row"><button data-a="begin">開始遊戲</button></div><small>先在下方調整設置，再開始。</small>':'<small>等待房主開始遊戲…</small>';return}
  pad.hidden=m!='setup';cv.hidden=m=='setup';ban(m=='end'?$('ban').textContent:'');
- if(m=='idle'||m=='end')h=!R?'<div class="row"><button data-a="solo">'+(m=='end'?'再猜一題':'猜題練習')+'</button><button class="g" data-a="pick">我來出題</button><button class="g" data-a="mk">製作圖庫</button>'+(m=='end'&&!S.solo&&strokes.length?'<button data-a="go">重播</button>':'')+(m=='end'&&S.maker?'<button class="g" data-a="cp">複製成題庫格式</button>':'')+'</div>':(g('md')=='bank'?'':'<button data-a="pick">我來出題</button>');
+ if(m=='idle'||m=='end')h=!R?'<div class="row"><button data-a="solo">'+(m=='end'?'再猜一題':'猜題練習')+'</button><button class="g" data-a="pick">我來出題</button><button class="g" data-a="mk">製作圖庫</button>'+(m=='end'&&!S.solo&&strokes.length?'<button data-a="go">重播</button>':'')+(m=='end'&&S.maker?'<button class="g" data-a="cp">複製成題庫格式</button>':'')+'</div>':'';
  else if(m=='pick')h=`<div class="row"><input id="tp" placeholder="${S.maker?'圖的名稱（必填）':'自訂題目（空白＝隨機）'}" maxlength="10">${S.maker?'':'<select id="src"><option value="d">手繪</option><option value="l">圖庫</option></select>'}<button data-a="ok">確定</button></div>`;
  else if(m=='setup')h=`<div class="row">題目：<b>${S.item.n}</b>（只有你看得到）<span id="rs"></span></div><div class="row">${COLS.map((x,i)=>`<button class="sw${i==ci?' on':''}" data-a="col" data-i="${i}" style="background:${x}"></button>`).join('')}</div><div class="row"><button class="g" data-a="undo">撤銷</button><button class="g" data-a="clr">清除</button>${S.maker?'<button class="g" data-a="cp">複製成題庫格式</button>':''}<button data-a="go">開始演示</button></div>`;
- else if(m=='run'&&S.own&&!S.solo)h=(S.vm?'<div class="row"><button data-a="rw">⏪ 倒退</button><button data-a="pp">⏯ 暫停</button><button data-a="ff">⏩ 快進</button></div>':'')+(g('adv')=='m'?'<button data-a="up">加一階</button> ':'')+(S.maker?'<button class="g" data-a="cp">複製成題庫格式</button> ':'')+'<button class="g" data-a="end">結束</button>';
+ else if(m=='run'&&S.own&&!S.solo&&!S.bank)h=(S.vm?'<div class="row"><button data-a="rw">⏪ 倒退</button><button data-a="pp">⏯ 暫停</button><button data-a="ff">⏩ 快進</button></div>':'')+(g('adv')=='m'?'<button data-a="up">加一階</button> ':'')+(S.maker?'<button class="g" data-a="cp">複製成題庫格式</button> ':'')+'<button class="g" data-a="end">結束</button>';
  else if(m=='run')h='<div class="row"><input id="gi" placeholder="輸入你的猜測" maxlength="12"><button data-a="gs">猜</button>'+(S.solo?'<button class="g" data-a="end">放棄</button>':'')+'</div>';
- c.innerHTML=h+(R&&HOST?' <button class="g" data-a="stop">結束本局遊戲</button>':'')+'<div class="msg" style="color:#ffe83d;min-height:1.2em"></div>';
+ c.innerHTML=h+(R&&HOST&&PH=='play'?'<div class="row" style="justify-content:space-between"><button class="g" data-a="stop">結束本局遊戲</button>'+hostBtn()+'</div>':'')+'<div class="msg" style="color:#ffe83d;min-height:1.2em"></div>';
  if(m=='setup')drawPad();
 }
 const capN=()=>{const c=+g('cap');return c>0?c+[0,1,3][S.item?S.item.lv:0]:Infinity};
 const spd=()=>flash(S.sp?'速度 ×'+S.sp:'已暫停');
 const act={
  cp(){return cpy();const st=strokes.filter(t=>t.p.length>1);if(!st.length)return flash('先畫圖');const ps=st.flatMap(t=>t.p),xs=ps.map(p=>p[0]),ys=ps.map(p=>p[1]),x0=Math.min(...xs),y0=Math.min(...ys),k=100/Math.max(Math.max(...xs)-x0,Math.max(...ys)-y0,1),o={n:S.item.n,al:S.item.al,lv:S.item.lv,c:CAT[S.item.n]||'自訂',s:st.map(t=>t.p.filter((_,i)=>i%2==0||i==t.p.length-1).map(p=>[Math.round((p[0]-x0)*k),Math.round((p[1]-y0)*k)]))};navigator.clipboard?navigator.clipboard.writeText(JSON.stringify(o)+',').then(()=>flash('已複製，貼到 shapes.json 的 [ 後面一行'),()=>flash('複製失敗')):flash('此瀏覽器不能複製')},
- begin(){PH='play';pub();applyPh();if(g('md')=='bank')bank()},stop(){PH='lobby';pub();applyPh()},
+ begin(){PH='play';pub();applyPh();if(g('md')=='bank')bank();else tGame()},nx(){if(g('md')=='bank')bank();else{TQ&&clearTimeout(TQ.t);tNext()}},sb(){TQ&&clearTimeout(TQ.t);tScore()},ng(){tGame()},stop(){TQ&&clearTimeout(TQ.t);TQ=null;PH='lobby';pub();applyPh()},
  solo(){S.solo=1;S.maker=0;const it=rnd(ITEMS.filter(i=>i.lv<=+g('lv')));S.item=it;start(it.s().map((p,i)=>({p:p.slice(),c:i%5})),it)},
  pick(){S.maker=0;S.mode='pick';ui()},mk(){S.maker=1;S.solo=0;S.mode='pick';ui()},rw(){S.sp=S.sp==-1?-2:S.sp==-2?-4:-1;spd()},pp(){S.sp=S.sp==0?1:0;spd()},ff(){S.sp=S.sp==2?4:S.sp==4?8:S.sp==8?1:2;spd()},
  ok(){
@@ -149,7 +149,7 @@ const act={
  gs(){
   const i=$('gi'),tx=i.value.trim();if(!tx||Date.now()-lastG<1500)return;lastG=Date.now();i.value='';
   if(S.solo){const ok=okG(tx);addG({nm:'你',tx,cs:cols(tx,ok)});if(ok)finish(true,'你')}
-  else R&&R.emit('g',{rid:S.rid,nm:ME,tx}).catch(()=>{});
+  else if(S.own){const ok=okG(tx);R.emit('g',{rid:S.rid,nm:ME,tx,rep:1,cs:cols(tx,ok),h:!S.sg}).catch(()=>{});if(ok)finish(true,ME,me())}else R&&R.emit('g',{rid:S.rid,nm:ME,tx}).catch(()=>{});
  }};
 $('ctl').addEventListener('click',e=>{const b=e.target.closest('[data-a]');b&&act[b.dataset.a](b)});
 $('ctl').addEventListener('keydown',e=>{if(e.key=='Enter'&&e.target.id=='gi')act.gs()});
@@ -179,7 +179,7 @@ function frame(){
  if(S.vm&&S.mode=='run'){const nw=performance.now();S.v=Math.max(0,S.v+(nw-S.lt)*S.sp);S.lt=nw}
  const T=S.T*1000,e=S.vm?S.v:Date.now()-S.t0,cyc=Math.floor(e/T),t=S.mode=='end'?0:(e%T)/T;
  if(S.mode=='run'&&S.own){
-  if(g('adv')=='a'){const n=Math.min(S.mx,cyc+1);if(n!=S.n){setN(n);send()}if(cyc>=S.mx+1)return finish(false)}
+  if(g('adv')=='a'||S.bank){const n=Math.min(S.mx,cyc+1);if(n!=S.n){setN(n);send()}if(cyc>=S.mx+1)return finish(false)}
   else if(S.n>=S.mx){if(S.fc===undefined)S.fc=cyc;if(cyc>S.fc)return finish(false)}
  }
  if(S.mode=='run'){const i=Math.floor(t*M);let s=0;if(S.vm&&S.sp<0)while(last!==i&&s++<M){shown[last]=undefined;last=(last-1+M)%M}else while(last!==i&&s++<M){last=(last+1+M)%M;shown[last]=cur[last]}}
@@ -229,10 +229,21 @@ function draw2(t){
 let HC=null,PH='play',HOST=0;
 const cfgs=()=>Object.fromEntries(['cap','adv','srt','lv','tt','hl','hc','sg','md'].map(i=>[i,$(i).type=='checkbox'?$(i).checked:$(i).value]));
 const pub=()=>R&&HOST&&R.presence({nm:ME,sc,host:1,ph:PH,cfg:cfgs()});
-function bank(){if(S.cd)return;S.cd=1;let n=3;const tk=()=>{if(R&&PH!='play'){S.cd=0;ban('');return}if(n>0){ban('即將開始 '+n);n--;setTimeout(tk,1000)}else{S.cd=0;ban('');const it=rnd(ITEMS.filter(i=>i.lv<=+g('lv')));S.solo=0;strokes=[];S.item=it;start(it.s().map((p,i)=>({p:p.slice(),c:i%5})),it)}};tk()}
-function applyPh(){$('game').className=(R&&PH=='lobby'?'wt ':'')+(R&&PH!='lobby'?'lk ':'')+(R&&!HOST?'nh':'');document.querySelector('details').open=!!(HOST&&PH=='lobby');if(R&&PH=='lobby'&&S.mode!='idle'){S={mode:'idle'};shown=[];ban('')}ui()}
+let TQ=null;
+const nmf=id=>((R&&R.peers().find(p=>p.peer===id))||{presence:{}}).presence.nm||'玩家';
+const ovt=(a,b,c)=>{const o=$('ov');o.hidden=false;o.textContent='';const x=document.createElement('div');x.textContent=a;const y=document.createElement('b');y.textContent=b;if(c)y.style.color=c;o.append(x,y)};
+function spin(ids,n){let d=50,t=0;const tick=()=>{t+=d;if(t<3000){ovt('第 '+n+' 局',nmf(rnd(ids)));d*=1.12;setTimeout(tick,d)}else{ovt('第 '+n+' 局',nmf(ids[0]),'#ffe83d');setTimeout(()=>turn(ids[0]),1000)}};tick()}
+function turn(id){$('ov').hidden=true;if(id===R.id)act.pick();else{S={mode:'idle'};shown=[];ui();ban(nmf(id)+' 出題中...')}}
+function sbShow(l){const o=$('ov');o.hidden=false;o.textContent='';const t=document.createElement('div');t.textContent='目前戰績';o.append(t);l.forEach((r,i)=>{const d=document.createElement('div');d.textContent=(i+1)+'. '+String(r[0]).slice(0,8)+'　'+r[1];o.append(d)})}
+function tGame(){TQ=TQ||{};clearTimeout(TQ.t);TQ.g=(TQ.g||0)+1;TQ.o=R.peers().map(p=>p.peer).sort(()=>Math.random()-.5);TQ.i=0;TQ.sb=0;R.emit('k',{sbx:1}).catch(()=>{});R.emit('k',{pk:{ids:TQ.o,n:TQ.g}}).catch(()=>{});ui()}
+function tAfter(){if(!TQ)return;clearTimeout(TQ.t);TQ.t=setTimeout(tNext,5000);ui()}
+function tNext(){if(!TQ)return;clearTimeout(TQ.t);TQ.i++;const ps=R.peers().map(p=>p.peer);while(TQ.i<TQ.o.length&&!ps.includes(TQ.o[TQ.i]))TQ.i++;if(TQ.i>=TQ.o.length)tScore();else R.emit('k',{nd:TQ.o[TQ.i]}).catch(()=>{});ui()}
+function tScore(){if(!TQ)return;TQ.sb=1;const l=R.peers().map(p=>[p.presence.nm||'玩家',p.presence.sc||0]).sort((a,b)=>b[1]-a[1]);R.emit('k',{sb:l}).catch(()=>{});ui()}
+const hostBtn=()=>{if(S.mode!='end'&&!(TQ&&TQ.sb))return'<span></span>';if(g('md')=='bank')return'<button class="pu" data-a="nx">下一題</button>';if(TQ&&TQ.sb)return'<button class="pu" data-a="ng">下一局</button>';return TQ&&TQ.i>=TQ.o.length-1?'<button class="pu" data-a="sb">目前戰績</button>':'<button class="pu" data-a="nx">下一題</button>'};
+function bank(){if(S.cd)return;S.cd=1;let n=3;const tk=()=>{if(R&&PH!='play'){S.cd=0;ban('');return}if(n>0){ban('即將開始 '+n);R&&R.emit('k',{cd:n}).catch(()=>{});n--;setTimeout(tk,1000)}else{S.cd=0;ban('');const it=rnd(ITEMS.filter(i=>i.lv<=+g('lv')));S.solo=0;S.bk=1;strokes=[];S.item=it;start(it.s().map((p,i)=>({p:p.slice(),c:i%5})),it)}};tk()}
+function applyPh(){$('ov').hidden=true;$('game').className=(R&&PH=='lobby'?'wt ':'')+(R&&PH!='lobby'?'lk ':'')+(R&&!HOST?'nh':'');document.querySelector('details').open=!!(HOST&&PH=='lobby');if(R&&PH=='lobby'&&S.mode!='idle'){S={mode:'idle'};shown=[];ban('')}ui()}
 function players(){
- const el=$('pl');
+ const el=$('plp');$('plb').textContent='玩家 '+(R?R.peers().length:1)+' ▾';
  if(!R){el.innerHTML='<span><b>你</b> '+sc+'</span>';return}
  const hp=R.peers().find(p=>p.presence.host&&!p.isMe);if(hp){HC=hp.presence.cfg||null;const np=hp.presence.ph||'lobby';if(np!=PH){PH=np;applyPh()}}
  el.innerHTML='';
@@ -256,10 +267,10 @@ async function enter(room,host){
    R.on('g',m=>{const d=m.data;if(!d||d.rid!==S.rid)return;if(d.rep){addG({nm:String(d.nm).slice(0,8),tx:String(d.tx).slice(0,12),cs:String(d.cs),h:d.h});return}
     if(m.isMe||!S.own||S.mode!='run')return;const tx=String(d.tx).slice(0,12),nm=String(d.nm).slice(0,8),ok=okG(tx);
     R.emit('g',{rid:S.rid,nm,tx,rep:1,cs:cols(tx,ok),h:!S.sg}).catch(()=>{});if(ok)finish(true,nm,m.peer)});
-   R.on('k',m=>{if(m.data&&m.data.to===R.id){R.leave();R=null;S={mode:'idle'};shown=[];$('game').hidden=true;$('lobby').hidden=false;$('lm').textContent='你已被房主移出房間'}});
+   R.on('k',m=>{const q=m.data;if(q&&q.cd!=null&&!m.isMe){ban(q.cd?'即將開始 '+q.cd:'');return}if(q&&q.pk){spin(q.pk.ids,q.pk.n);return}if(q&&q.nd){turn(q.nd);return}if(q&&q.sb){sbShow(q.sb);return}if(q&&q.sbx){$('ov').hidden=true;return}if(q&&q.to===R.id){R.leave();R=null;S={mode:'idle'};shown=[];$('game').hidden=true;$('lobby').hidden=false;$('lm').textContent='你已被房主移出房間'}});
    R.on('r',m=>{const d=m.data;if(m.isMe||S.own||!d||d.rid!==S.rid||S.mode!='run')return;S.mode='end';S.og=(d.og||[]).map(v=>({x:v[0],y:v[1],c:v[2]}));
     if(d.ok&&d.who===me()){sc+=d.pts;R.presence({sc})}
-    ban(d.ok?`答案：${d.ans}　${d.nm} 猜中，得 ${d.pts} 分`:`沒人猜中，答案是：${d.ans}`);ui()});
+    ban(d.ok?`答案：${d.ans}　${d.nm} 猜中，得 ${d.pts} 分`:`沒人猜中，答案是：${d.ans}`);ui();if(HOST&&g('md')=='turn')tAfter()});
   }catch(e){R=null;$('lm').textContent='無法加入房間，請確認網路後再試，或先單機練習';return}
  }
  $('lobby').hidden=true;$('game').hidden=false;$('ti').textContent=room?'房間 '+room:'單機練習';$('bsh').hidden=!room;
@@ -274,6 +285,7 @@ document.querySelector('details').addEventListener('change',pub);
 $('bc').onclick=()=>{const r=g('rm').trim();r?enter(r,1):($('lm').textContent='請輸入房間名稱')};
 addEventListener('pagehide',()=>{R&&R.leave()});
 $('nx').onclick=()=>bank();
+$('plb').onclick=()=>$('plp').classList.toggle('on');
 setInterval(()=>{if(R&&S.own&&S.mode=='run')send()},2000);
 requestAnimationFrame(frame);
 </script>
