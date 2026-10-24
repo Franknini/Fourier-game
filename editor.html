@@ -1,0 +1,60 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>題庫編輯器</title>
+<style>
+:root{color-scheme:dark;--bg:#07070f;--pn:#12122a;--tx:#e8ecff;--mu:#8a90b8;--c1:#19f3ff;--bad:#ff5a6e;--warn:#ffb347}
+*{box-sizing:border-box}
+body{margin:auto;max-width:900px;padding:10px;background:var(--bg);color:var(--tx);font:15px/1.5 "Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif}
+h1{font-size:20px;color:var(--c1);margin:4px 0}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0;align-items:center}
+button{background:transparent;color:var(--c1);border:1.5px solid var(--c1);border-radius:8px;padding:6px 12px;font:inherit}
+button.g{color:var(--mu);border-color:#3a3f66}button.on{box-shadow:0 0 8px #19f3ff88;background:#19f3ff18}
+.ed{position:relative;height:52dvh;border:1px solid #2c3060;border-radius:8px;background:var(--pn);overflow:hidden}
+.ed pre,.ed textarea{position:absolute;inset:0;margin:0;padding:8px;font:16px/22px ui-monospace,Menlo,Consolas,"Noto Sans Mono CJK TC",monospace;white-space:pre;border:0;letter-spacing:0;tab-size:2}
+.ed pre{pointer-events:none;overflow:hidden;color:#cfd6ff}
+.ed textarea{background:transparent;color:transparent;caret-color:#fff;resize:none;outline:none;overflow:auto}
+.l{display:block;height:22px;overflow:visible}.l.e{color:var(--bad);background:#ff5a6e26}.l.w{color:var(--warn);background:#ffb34726}
+#msgs div{padding:3px 0;cursor:pointer}#msgs .e{color:var(--bad)}#msgs .w{color:var(--warn)}#msgs .ok{color:var(--c1);cursor:default}
+small{color:var(--mu)}
+</style></head><body>
+<h1>題庫編輯器</h1>
+<small>改完後按「複製全部」，到 GitHub 開啟同名檔案，按鉛筆圖示編輯，全選貼上，再按 Commit changes。出錯的那一行會立刻變紅。</small>
+<div class="row"><button id="tw" class="on">文字題（words.txt）</button><button id="ts" class="g">圖庫（shapes.json）</button></div>
+<div class="ed"><pre id="hl"></pre><textarea id="ta" spellcheck="false" wrap="off" autocomplete="off" autocapitalize="off"></textarea></div>
+<div class="row"><button id="cp">複製全部</button><button id="dl" class="g">下載檔案</button><button id="rl" class="g">重新載入線上版本</button><span id="st"></span></div>
+<div id="msgs"></div>
+<script>
+const $=s=>document.querySelector(s),esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function vw(t){const out=[],seen=new Map();t.split('\n').forEach((raw,i)=>{const l=raw.trim();if(!l||l[0]=='#')return;const p=l.split(/[,，]/),names=(p[0]||'').split('|').map(x=>x.trim());let bad='';
+ if(!names[0])bad='缺少題目名稱';else if(names.some(x=>!x))bad='別名之間有空白項（多了一個 | ）';else if(p.length<3)bad='格式應為「名稱|別名,難度,類別」，目前只有 '+p.length+' 欄';else if(!/^\d+$/.test(p[1].trim()))bad='難度必須是 0 以上的整數，目前是「'+p[1].trim()+'」';else if(!p[2].trim())bad='類別不能空白';
+ if(bad){out.push({l:i,t:'e',m:bad});return}
+ if(p.length>3)out.push({l:i,t:'w',m:'第 4 欄以後的內容會被忽略'});
+ if(seen.has(names[0]))out.push({l:i,t:'w',m:'與第 '+(seen.get(names[0])+1)+' 行的題目重複'});else seen.set(names[0],i)});return out}
+function chk(o){if(!o||typeof o!='object'||Array.isArray(o))return'必須是 { ... } 物件';if(typeof o.n!='string'||!o.n.trim())return'缺少名稱 "n"';if(!Array.isArray(o.al)||o.al.some(x=>typeof x!='string'))return'別名 "al" 必須是文字陣列，例如 ["貓咪"]';if(!Number.isInteger(o.lv)||o.lv<0)return'難度 "lv" 必須是 0 以上的整數';if(typeof o.c!='string'||!o.c.trim())return'缺少類別 "c"';if(!Array.isArray(o.s)||!o.s.length)return'筆畫 "s" 必須是非空陣列';
+ for(let j=0;j<o.s.length;j++){const st=o.s[j];if(!Array.isArray(st)||st.length<2)return'第 '+(j+1)+' 筆畫至少要有 2 個點';for(let k=0;k<st.length;k++){const q=st[k];if(!Array.isArray(q)||q.length!=2||!q.every(v=>typeof v=='number'&&isFinite(v)&&Math.abs(v)<10000))return'第 '+(j+1)+' 筆畫的第 '+(k+1)+' 個點必須是 [x,y] 兩個數字'}}return''}
+function vs(t){const out=[],L=t.split('\n'),idx=L.map((x,i)=>x.trim()?i:-1).filter(i=>i>=0);if(!idx.length)return[{l:0,t:'e',m:'檔案是空的，至少要有 [ 和 ]'}];
+ const first=idx[0],last=idx[idx.length-1];
+ if(L[first].trim()!='['||L[last].trim()!=']'||idx.length<2){
+  try{const a=JSON.parse(t);if(!Array.isArray(a))out.push({l:first,t:'e',m:'最外層必須是 [ ... ]'});else a.forEach((o,i)=>{const m=chk(o);if(m)out.push({l:first,t:'e',m:'第 '+(i+1)+' 筆：'+m})})}catch(e){const mm=/position (\d+)/.exec(e.message);out.push({l:mm?t.slice(0,+mm[1]).split('\n').length-1:first,t:'e',m:'JSON 格式錯誤：'+e.message})}return out}
+ const body=idx.slice(1,-1),seen=new Map();
+ body.forEach((li,n)=>{const raw=L[li].trim(),comma=raw.endsWith(','),txt=comma?raw.slice(0,-1):raw,isLast=n==body.length-1;
+  if(!isLast&&!comma)out.push({l:li,t:'e',m:'這一行結尾缺少逗號 ,'});
+  if(isLast&&comma)out.push({l:li,t:'e',m:'最後一筆結尾不能有逗號'});
+  let o;try{o=JSON.parse(txt)}catch(e){out.push({l:li,t:'e',m:'JSON 格式錯誤：'+e.message});return}
+  const m=chk(o);if(m){out.push({l:li,t:'e',m});return}
+  if(seen.has(o.n))out.push({l:li,t:'w',m:'名稱「'+o.n+'」與第 '+(seen.get(o.n)+1)+' 行重複'});else seen.set(o.n,li)});
+ return out}
+const F={w:{name:'words.txt',val:'',v:vw},s:{name:'shapes.json',val:'',v:vs}};let cur='w';
+function render(){const f=F[cur],ta=$('#ta'),t=ta.value;f.val=t;const errs=f.v(t).sort((a,b)=>a.l-b.l),mp=new Map();errs.forEach(e=>{if(mp.get(e.l)!='e')mp.set(e.l,e.t)});
+ $('#hl').innerHTML=t.split('\n').map((x,i)=>'<span class="l'+(mp.get(i)?' '+mp.get(i):'')+'">'+esc(x)+'</span>').join('');
+ $('#hl').scrollTop=ta.scrollTop;$('#hl').scrollLeft=ta.scrollLeft;
+ const ne=errs.filter(e=>e.t=='e').length,nw=errs.length-ne;
+ $('#st').textContent=ne?'❌ '+ne+' 個錯誤'+(nw?'、'+nw+' 個提醒':''):(nw?'⚠ '+nw+' 個提醒':'✓ 沒問題');
+ $('#msgs').innerHTML=errs.map(e=>'<div class="'+e.t+'" data-l="'+e.l+'">第 '+(e.l+1)+' 行：'+esc(e.m)+'</div>').join('')||'<div class="ok">✓ 沒有發現問題</div>'}
+function load(k){fetch(F[k].name+'?'+Date.now()).then(r=>r.ok?r.text():Promise.reject()).then(t=>{F[k].val=t;if(cur==k){$('#ta').value=t;render()}}).catch(()=>{if(cur==k)$('#st').textContent='無法從線上載入（直接開檔案時正常），可以自己貼上內容'})}
+function tab(k){F[cur].val=$('#ta').value;cur=k;$('#tw').className=k=='w'?'on':'g';$('#ts').className=k=='s'?'on':'g';$('#ta').value=F[k].val;render()}
+$('#ta').addEventListener('input',render);$('#ta').addEventListener('scroll',()=>{$('#hl').scrollTop=$('#ta').scrollTop;$('#hl').scrollLeft=$('#ta').scrollLeft});
+$('#tw').onclick=()=>tab('w');$('#ts').onclick=()=>tab('s');$('#rl').onclick=()=>load(cur);
+$('#msgs').onclick=e=>{const d=e.target.closest('[data-l]');if(!d)return;const ta=$('#ta'),l=+d.dataset.l,ls=ta.value.split('\n');let pos=0;for(let i=0;i<l;i++)pos+=ls[i].length+1;ta.focus();ta.setSelectionRange(pos,pos+ls[l].length);ta.scrollTop=Math.max(0,(l-3)*22)};
+$('#cp').onclick=()=>{const ta=$('#ta');const ok=()=>$('#st').textContent='已複製，可以貼到 GitHub 了';const fb=()=>{ta.focus();ta.select();try{document.execCommand('copy')?ok():$('#st').textContent='請長按全選後自己複製'}catch(e){$('#st').textContent='請長按全選後自己複製'}};try{navigator.clipboard.writeText(ta.value).then(ok,fb)}catch(e){fb()}};
+$('#dl').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([$('#ta').value],{type:'text/plain'}));a.download=F[cur].name;a.click()};
+load('w');load('s');render();
+</script></body></html>
