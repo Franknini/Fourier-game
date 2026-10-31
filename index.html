@@ -30,6 +30,7 @@ summary{color:var(--mu);cursor:pointer;margin-top:6px}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
 @media(min-width:900px){#game{grid-template-rows:auto auto 1fr auto}#top{grid-row:1}#bar{grid-column:1;grid-row:2}#stage{grid-column:1;grid-row:3}#side{grid-column:2;grid-row:2/5}#rank{display:flex;grid-column:1;grid-row:4;flex-wrap:wrap;gap:8px 14px;padding:6px 8px;font-size:calc(15px*var(--fs));color:var(--mu)}#rank b{color:var(--c2)}#plb{display:none}}
 html,body{overflow-x:hidden}body{overflow-y:hidden}.mb{display:flex;gap:8px;margin-top:6px}.mbtn{flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:10px;text-align:left;color:var(--mu);border-color:#3a3f66;box-shadow:none}.mbtn small{font-size:calc(12px*var(--fs));color:var(--mu)}.mbtn.on{color:var(--c1);border-color:var(--c1);box-shadow:0 0 8px #19f3ff44}.cd summary b{color:var(--c1)}#cdn{position:absolute;right:10px;top:10px;z-index:7;background:#07070fdd;border:1px solid var(--c1);border-radius:8px;padding:2px 10px;font-size:calc(16px*var(--fs))}#cdn[hidden]{display:none}#sol{flex:0 1 auto;color:var(--mu);font-size:calc(13px*var(--fs));text-align:right;padding-right:4px}#prog{position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#07070fcc;font-size:calc(18px*var(--fs));text-align:center}#prog[hidden]{display:none}#refp{position:fixed;inset:0;z-index:65;background:#000a;display:flex;align-items:center;justify-content:center}#refp[hidden]{display:none}.rbox{background:var(--pn);border:1px solid var(--c1);border-radius:12px;padding:12px;width:min(94vw,640px);max-height:80dvh;overflow:auto}.wh{color:#fff}.mt{color:var(--mu)}#hoff{position:fixed;left:8px;right:8px;top:70px;z-index:40;background:#2a2000f0;border:1px solid #ffe83d;color:#ffe83d;border-radius:8px;padding:6px 10px;text-align:center;font-size:calc(14px*var(--fs))}#hoff[hidden]{display:none}#dlg{position:fixed;inset:0;z-index:60;background:#000a;display:flex;align-items:center;justify-content:center}#dlg[hidden]{display:none}.dbox{background:var(--pn);border:1px solid var(--c1);border-radius:12px;padding:16px;max-width:85vw;text-align:center}.dbox .row{justify-content:center;margin-top:12px}@media (orientation:landscape) and (max-height:520px) and (max-width:899px){#game{display:grid;grid-template-columns:1fr 250px;grid-template-rows:auto auto 1fr;column-gap:8px;padding:4px 0}#top{grid-column:1/3;grid-row:1}#bar{grid-column:1;grid-row:2}#stage{grid-column:1;grid-row:3;width:100%;max-height:none;aspect-ratio:auto;height:100%}#side{grid-column:2;grid-row:2/4}#game.wt #side{grid-column:1/3}#rank{display:none}}#game>*{min-width:0}#ti{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#top button{flex:none}#pl{flex:0 0 auto}#gi{flex:1 1 0;min-width:0}#ti{flex:1 1 0}#top{gap:6px}#hint{max-width:60%;text-align:right}
+@media(max-width:899px) and (not ((orientation:landscape) and (max-height:520px))){#game:has(#gi) #stage{flex:1 1 0;min-height:0;max-height:none;aspect-ratio:auto}#game:has(#gi) #side{flex:0 1 auto}#game:has(#gi) .msg{display:none}}
 </style></head><body>
 <div id="toast"></div><div id="refp" hidden><div class="rbox"><div class="row"><b>目前題庫的類別與難度</b><button id="refx" class="g">關閉</button></div><div id="reft"></div></div></div><div id="hoff" hidden>房主離線中，等待重連…不想等的話，可以按右上角「離開」退出房間</div><div id="dlg" hidden><div class="dbox"><div id="dlgt"></div><div class="row"><button id="dlgy">確定</button><button id="dlgn" class="g">取消</button></div></div></div><div id="lobby">
 <h1>傅立葉猜圖</h1>
@@ -100,6 +101,8 @@ function grp(ns,mg){const n=ns.length,par=ns.map((_,i)=>i),f=i=>par[i]==i?i:(par
  else{for(let i=0;i<n;i++)for(let j=i+1;j<n;j++)if(f(i)!=f(j)&&mind(RS[i].pts,RS[j].pts)<=.1)un(i,j);
   for(let i=0;i<n;i++){const A=RS[i].pts;if(RS[i].len<.4||Math.hypot(A[0][0]-A[A.length-1][0],A[0][1]-A[A.length-1][1])>.25*RS[i].len)continue;for(let j=0;j<n;j++)if(j!=i&&f(i)!=f(j)&&RS[j].pts.every(q=>inside(q,A)))un(i,j)}}
  const G={};ns.forEach((s,i)=>{(G[f(i)]=G[f(i)]||[]).push(i)});const gl=Object.values(G),sub=a=>a.length>150?a.filter((_,i)=>i%Math.ceil(a.length/150)==0):a,pts=l=>sub(l.flatMap(i=>RS[i].pts)),len=l=>l.reduce((s,i)=>s+RS[i].len,0),mg2=(a,b)=>{gl[a]=gl[a].concat(gl[b]);gl.splice(b,1)};
+ const bbx=l=>{let a=1e9,b=1e9,c=-1e9,d=-1e9;l.forEach(i=>RS[i].pts.forEach(q=>{a=Math.min(a,q[0]);b=Math.min(b,q[1]);c=Math.max(c,q[0]);d=Math.max(d,q[1])}));return[a,b,c,d]};
+ for(let ch=1;ch&&gl.length>1;){ch=0;for(let i=0;i<gl.length&&!ch;i++)for(let j=0;j<gl.length&&!ch;j++){if(i==j)continue;const A=bbx(gl[i]),B=bbx(gl[j]),m=.02;if(A[0]>=B[0]-m&&A[1]>=B[1]-m&&A[2]<=B[2]+m&&A[3]<=B[3]+m){mg2(Math.min(i,j),Math.max(i,j));ch=1}}}
  for(let gd=0;gd<20&&gl.length>1;gd++){const ti=gl.findIndex(l=>len(l)<.15);if(ti<0)break;let bj=-1,bd=1e9;gl.forEach((l,j)=>{if(j!=ti){const d=mind(pts(gl[ti]),pts(l));if(d<bd){bd=d;bj=j}}});mg2(Math.min(ti,bj),Math.max(ti,bj))}
  while(gl.length>3){let ba=0,bb=1,bd=1e9;for(let a=0;a<gl.length;a++)for(let b=a+1;b<gl.length;b++){const d=mind(pts(gl[a]),pts(gl[b]));if(d<bd){bd=d;ba=a;bb=b}}mg2(ba,bb)}
  return gl.sort((a,b)=>len(b)-len(a)).map(l=>l.map(i=>ns[i]))}
@@ -129,7 +132,7 @@ const parseW=t=>t.split('\n').map(l=>l.trim()).filter(l=>l&&l[0]!='#').map(l=>{c
 function setBank(sh,wd){ITEMS.length=0;ITEMS.push(...BASE_I);WORDS.length=0;WORDS.push(...BASE_W);
  sh.forEach(o=>{ITEMS.push({n:o.n,al:o.al||[],lv:o.lv|0,k:Array.isArray(o.k)?o.k:null,g:Array.isArray(o.g)?o.g:null,s:()=>o.s.map(p=>p.map(q=>q.slice()))});CAT[o.n]=o.c||'其他'});
  wd.forEach(([a,l,c])=>{const x=String(a).split('|');WORDS.push({n:x[0],al:x.slice(1),lv:l|0});CAT[x[0]]=c||'其他'});
- for(let i=WORDS.length;i--;)if(ITEMS.some(t=>t.n==WORDS[i].n))WORDS.splice(i,1)}
+}
 setBank(NEW,WL);
 const ld=(u,f)=>fetch(u+'?'+Date.now()).then(r=>r.ok?f(r):Promise.reject()).catch(()=>0);
 Promise.all([ld('shapes.json',r=>r.json()),ld('words.txt',r=>r.text())]).then(([a,b])=>{if(Array.isArray(a))NEW=a;if(b)WL=parseW(b);setBank(NEW,WL)});
@@ -160,8 +163,8 @@ function finish(ok,nm,who){
 }
 const cols=(tx,ok)=>[...tx].map(ch=>ok||S.ans.includes(ch)?1:0).join('');
 function addG(d){const l=$('log'),r=document.createElement('div'),b=document.createElement('b');b.textContent=d.nm+'：';r.append(b);[...d.tx].forEach((ch,i)=>{const s=document.createElement('span');s.className=d.cs[i]=='1'?'ok':d.cs[i]=='2'?'wh':d.cs[i]=='3'?'mt':'no';s.textContent=d.h&&d.nm!==ME?'*':ch;r.append(s)});l.append(r);if(l.children.length<=1)AS=true;if(AS)l.scrollTop=l.scrollHeight}
-function ban(t){const b=$('ban');b.textContent=t;b.hidden=!t}
-function flash(t){$('lm').textContent=t;const c=$('ctl').querySelector('.msg');if(c)c.textContent=t}
+function ban(t){const b=$('ban');b.textContent=t;b.hidden=!t;b.dataset.f=''}
+function flash(t){$('lm').textContent=t;const c=$('ctl').querySelector('.msg');if(c)c.textContent=t;if(t&&c&&getComputedStyle(c).display=='none'){const b=$('ban');if(b.hidden||b.dataset.f){b.textContent=t;b.hidden=false;b.dataset.f='1';clearTimeout(flash.tm);flash.tm=setTimeout(()=>{if(b.dataset.f){b.hidden=true;b.dataset.f=''}},2600)}}}
 
 const me=()=>R&&(R.peers().find(p=>p.isMe)||{}).peer;
 
@@ -244,7 +247,8 @@ const exP=e=>{const e0=S.vm?(g('adv')=='a'||S.bank?(S.mx-3)*S.T*1000:(S.hist.fin
 function geo(w,h,en){const bb=S.bb||[1,1],ex=Math.max(.2,bb[0]),ey=Math.max(.2,bb[1]),Rm=Math.max(.3,...(S.rr&&S.rr.length?S.rr:[1.1])),gp=.25,one=S.cc&&S.cc.length==1;let kv,kh;
  if(en){kv=Math.min(w*.92/(2*ex),h/2*.92/(2*ey));kh=Math.min(w/2*.92/(2*ex),h*.92/(2*ey))}
  else{kv=Math.min(h*.92/(2*Rm+gp+2*ey),w*.92/(2*ex),one?w*.92/(2*Rm):1e9);kh=Math.min(w*.92/(2*Rm+gp+2*ex),h*.92/(2*ey),one?h*.92/(2*Rm):1e9)}
- return{ex,ey,Rm,gp,kv,kh,wide:kh>kv}}
+ return{ex,ey,Rm,gp,kv,kh,wide:!PORT()&&kh>kv}}
+const PORT=()=>{try{return/portrait/.test(screen.orientation.type)}catch(e){return screen.height>=screen.width}};
 function segX(a,b,c,d){const o=(p,q,r)=>(q[0]-p[0])*(r[1]-p[1])-(q[1]-p[1])*(r[0]-p[0]);return o(a,b,c)*o(a,b,d)<0&&o(c,d,a)*o(c,d,b)<0}
 function ext(c){let R=0;for(let q=0;q<48;q++){const o=chain(c,q/48);for(let i=2;i<o.length;i++)R=Math.max(R,Math.hypot(o[i-1][0]-o[1][0],o[i-1][1]-o[1][1])+o[i][2])}return R}
 function lay2(R,P,D,gap){const n=R.length,perms=n==2?[[0,1],[1,0]]:[[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]];let best=null;
@@ -262,7 +266,9 @@ function draw2(t){
  else if(LD=='none'){k=Math.min(w*.92/(2*G.ex),h*.92/(2*G.ey));B=[w/2,h/2]}
  else{const{Rm,gp,ex,ey}=G;
   if(wide){k=G.kh;const tot=(2*Rm+gp+2*ex)*k,x0=(w-tot)/2;A=[x0+Rm*k,h/2];B=[x0+(2*Rm+gp+ex)*k,h/2]}
-  else{k=G.kv;const tot=(2*Rm+gp+2*ey)*k,y0=(h-tot)/2;A=[w/2,y0+Rm*k];B=[w/2,y0+(2*Rm+gp+ey)*k]}
+  else{const k0=Math.min(w*.92/(2*ex),h*.92/(2*ey)),kv=G.kv,tt=Math.max(0,Math.min(1,(1.1-h/w)/.5)),tot=(2*Rm+gp+2*ey)*kv,Bs=(h-tot)/2+(2*Rm+gp+ey)*kv,kT=kv+(k0-kv)*tt,byT=Bs+(h/2-Bs)*tt,now=performance.now();
+   let q=S.sm;if(!q||q.rid!==S.rid||q.w!==w||Math.abs(q.h-h)>h){q=S.sm={rid:S.rid,w,h,k:kT,by:byT,t:now}}else{const a=1-Math.exp(-Math.min(100,now-q.t)/110);q.k+=(kT-q.k)*a;q.by+=(byT-q.by)*a;q.t=now;q.h=h}
+   k=q.k;B=[w/2,q.by];A=[w/2,q.by-(Rm+gp+ey)*k]}
   const zp=S.n>=S.mx-2?exP(S.vm?S.v:Date.now()-S.t0):0;if(zp>0){const k2=Math.min(w*.92/(2*ex),h*.92/(2*ey)),B2=[w/2,h/2];k+=(k2-k)*zp;B=[B[0]+(B2[0]-B[0])*zp,B[1]+(B2[1]-B[1])*zp]}}
  let AG=cg.map(()=>A);
  if(!hid&&cg.length>1){const key=S.rid+'|'+w+'x'+h+'|'+cg.length;if(!S.ly||S.ly.key!=key){const R=cg.map((c,gi)=>(S.rr&&S.rr[gi])||.5),P=cg.map(c=>wide?[c[1][1],c[1][0]]:[c[1][0],c[1][1]]),D=(wide?B[0]-A[0]:B[1]-A[1])/k;S.ly={key,sl:lay2(R,P,D,.15)}}
