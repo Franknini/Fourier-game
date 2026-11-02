@@ -144,7 +144,7 @@ function chain(c,t){let x=0,y=0;const o=[[0,0]];for(const[k,re,im]of c){const a=
 function curve(c,fl){const o=[];for(let j=0;j<M;j++){const t=j/M;let x=0,y=0;for(const[k,re,im]of c){const a=2*Math.PI*k*t,co=Math.cos(a),si=Math.sin(a);x+=re*co-im*si;y+=re*si+im*co}o.push({x,y,c:parseInt(fl[Math.floor(j*N/M)],36)})}return o}
 
 function rdpV(p,e){if(p.length<3)return p;let md=0,mi=0;const a=p[0],b=p[p.length-1],dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy);for(let i=1;i<p.length-1;i++){const d=L<1e-9?Math.hypot(p[i].x-a.x,p[i].y-a.y):Math.abs(dy*p[i].x-dx*p[i].y+b.x*a.y-b.y*a.x)/L;if(d>md){md=d;mi=i}}return md>e?rdpV(p.slice(0,mi+1),e).slice(0,-1).concat(rdpV(p.slice(mi),e)):[a,b]}
-function simpV(V){const o=[];let s=0;for(let i=0;i<V.length;i++)if(!V[i].c||i==V.length-1){o.push(...rdpV(V.slice(s,i+1),.002));s=i+1}return o}
+function simpV(V){const o=[];let s=0;for(let i=0;i<V.length;i++)if(!V[i].c||i==V.length-1){o.push(...rdpV(V.slice(s,i+1),.0008));s=i+1}return o}
 function exCurve(V){const L=[0];for(let i=0;i<V.length;i++){const a=V[i],b=V[(i+1)%V.length];L.push(L[i]+Math.hypot(b.x-a.x,b.y-a.y)*(a.c?1:CF))}const T=L[V.length],o=[];let j=0;for(let q=0;q<M;q++){const s=q*T/M;while(j<V.length-1&&L[j+1]<s)j++;const a=V[j],b=V[(j+1)%V.length],u=(s-L[j])/((L[j+1]-L[j])||1);o.push({x:a.x+(b.x-a.x)*u,y:a.y+(b.y-a.y)*u,c:a.c})}return o}
 function setN(n){S.n=n;S.full=0;if(n>=S.mx-2){S.cc=S.cs.map(()=>[[0,0,0]]);cur=S.eg.map(exCurve);if(!S.vm&&S.exE==null)S.exE=S.at?(S.mx-3)*S.T*1000:Date.now()-S.t0}else{S.exE=null;S.cc=S.cs.map((cs,gi)=>circ(cs,n,S.sz[gi]));cur=S.cc.map((c,gi)=>curve(c,S.fl[gi]))}}
 
@@ -161,7 +161,7 @@ function finish(ok,nm,who){
  if(S.mode!='run')return;
  const p=ok?pts():0;S.mode='end';if(S.solo){SOLO.n++;if(ok)SOLO.pts+=p}
  const pd=(S.own&&R&&g('md')=='turn')?Math.round(p*Math.max(0,1-.2*(S.hn||0))):p;if(ok&&(S.solo||(S.own&&(g('md')!='bank'||who===me())))){sc+=pd;R&&R.presence({sc})}
- if(R&&S.own)R.emit('r',{rid:S.rid,ok,who,nm,pts:p,ans:S.ans,og:thin(S.og,120).map(v=>[+v.x.toFixed(2),+v.y.toFixed(2),+v.c])}).catch(()=>{});
+ if(R&&S.own)R.emit('r',{rid:S.rid,ok,who,nm,pts:p,ans:S.ans,og:S.eg.flatMap(V=>V.map(v=>[+v.x.toFixed(3),+v.y.toFixed(3),+v.c]))}).catch(()=>{});
  ban(ok?`答案：${S.ans}　${nm} 猜中，得 ${p} 分`+(pd!==p?`（你提示了 ${S.hn} 次，出題者得 ${pd} 分）`:''):(R||S.solo?`沒人猜中，答案是：${S.ans}`:`演示結束，題目是：${S.ans}`));ui();if(R&&HOST&&g('md')=='turn')tAfter();
 }
 const cols=(tx,ok)=>[...tx].map(ch=>ok||S.ans.includes(ch)?1:0).join('');
@@ -201,7 +201,7 @@ const act={
   if(S.maker&&!v)return flash('請輸入圖的名稱');S.item=v?{n:v,al:[],lv}:rnd(pool);S.solo=0;strokes=[];PBN='';S.mode='setup';ui();if(R&&g('md')=='turn'&&+g('dt')>0)R.emit('k',{dt:{s:Math.round(+g('dt')*(1+.5*(S.item.lv|0)))}}).catch(()=>{});sendPg();
  },
  col(b){ci=+b.dataset.i;ui()},undo(){strokes.pop();drawPad();sendPg()},clr(){if(!strokes.length)return;askc('確定清除所有筆畫？',()=>{strokes=[];drawPad();sendPg()})},
- go(){start(strokes.map(s=>({p:s.p,c:s.c})),S.item)},
+ go(){start(strokes.filter(s=>s.p.length>1).map(s=>({p:s.p,c:s.c})),S.item)},
  up(){if(S.n<S.mx){bump();send()}},
  end(){finish(false)},
  ht(){const i=$('hti');if(!i||!R||!S.own||S.mode!='run')return;const v=i.value.trim();if(!v||(S.hn||0)>=hnMax())return;const tx=filt(maskA(v)).slice(0,24);S.hn=(S.hn||0)+1;(S.ht=S.ht||[]).push(tx);R.emit('g',{rid:S.rid,ht:1,t:tx}).catch(()=>{});ui();flash('提示已送出，你這回合的得分 −'+20*S.hn+'%')},
@@ -232,7 +232,8 @@ function drawPad(){const rs=$('rs');if(rs)rs.textContent=!R?'你畫了 '+strokes
 const pt=e=>{const r=pad.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]};
 pad.onpointerdown=e=>{if(strokes.length>=capN()){flash('筆數已達上限，可先撤銷');return}pad.setPointerCapture(e.pointerId);dr=1;strokes.push({p:[pt(e)],c:ci});drawPad()};
 pad.onpointermove=e=>{if(!dr)return;const s=strokes[strokes.length-1],q=pt(e),l=s.p[s.p.length-1];if(Math.hypot(q[0]-l[0],q[1]-l[1])>3){s.p.push(q);drawPad()}};
-pad.onpointerup=pad.onpointercancel=()=>{dr=0;sendPg()};
+const strokeLen=p=>{let l=0;for(let i=1;i<p.length;i++)l+=Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]);return l};
+pad.onpointerup=pad.onpointercancel=()=>{const was=dr;dr=0;if(was){const s=strokes[strokes.length-1];if(s&&(s.p.length<2||strokeLen(s.p)<8))strokes.pop();drawPad()}sendPg()};
 
 function size(){const r=$('stage').getBoundingClientRect(),dp=devicePixelRatio;[cv,pad].forEach(c=>{c.width=r.width*dp;c.height=r.height*dp});if(S.mode=='setup')drawPad()}
 new ResizeObserver(size).observe($('stage'));
@@ -423,11 +424,10 @@ const hm=(location.hash||location.search).match(/room=([\w.-]+)/);if(hm)$('rm').
 $('bx').onclick=()=>{if(!R&&S.mode!='idle'){S={mode:'idle',solo:true};shown=[];strokes=[];SOLO={n:0,pts:0};sc=0;cv.getContext('2d').clearRect(0,0,cv.width,cv.height);pad.getContext('2d').clearRect(0,0,pad.width,pad.height);$('prog').hidden=true;$('log').innerHTML='';$('cpp').hidden=true;ban('');$('hint').textContent='';ui();return}if(R&&HOST){askc('確定解散房間？所有人都會被移出。',()=>R.emit('k',{bye:1}).catch(()=>{}).then(()=>{try{R.clear()}catch(e){}exitRoom('房間已解散')}))}else exitRoom('')};
 $('setbox').addEventListener('change',pub);
 $('bc').onclick=()=>{const r=g('rm').trim();r?enter(r,1):($('lm').textContent='請輸入房間名稱')};
-addEventListener('pointerup',()=>{const e=document.documentElement;if(!document.fullscreenElement&&e.requestFullscreen)e.requestFullscreen({navigationUI:'hide'}).catch(()=>{})},true);
+let FSD=0;const STANDALONE=()=>matchMedia('(display-mode: fullscreen)').matches||matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;addEventListener('pointerup',()=>{if(FSD||STANDALONE()||document.fullscreenElement)return;const e=document.documentElement;if(!e.requestFullscreen)return;FSD=1;e.requestFullscreen({navigationUI:'hide'}).catch(()=>{FSD=0})},true);
 let BKT=0;addEventListener('popstate',()=>{if($('game').hidden)return;if(Date.now()-BKT<1800){BKT=0;history.back();return}BKT=Date.now();try{history.pushState({fg:1},'')}catch(e){}toast('再滑一次返回才會離開頁面',1500)});
 (()=>{const vv=window.visualViewport,f=()=>{const h=vv?vv.height:innerHeight;document.documentElement.style.setProperty('--vvh',h+'px');document.body.style.transform=vv&&vv.offsetTop?'translateY('+vv.offsetTop+'px)':'';document.documentElement.classList.toggle('ls',!PORT()&&innerWidth>innerHeight&&innerHeight<=520&&innerWidth<=899);scrollTo(0,0)};if(vv){vv.addEventListener('resize',f);vv.addEventListener('scroll',f)}addEventListener('resize',f);addEventListener('orientationchange',()=>setTimeout(f,200));f()})();
 $('stage').addEventListener('touchmove',e=>e.preventDefault(),{passive:false});pad.addEventListener('touchstart',e=>e.preventDefault(),{passive:false});
-addEventListener('pagehide',()=>{if(R&&HOST)R.emit('k',{bye:1});R&&R.leave()});
 $('plb').onclick=()=>$('plp').classList.toggle('on');
 $('refx').onclick=()=>{$('refp').hidden=true};$('refp').addEventListener('click',e=>{if(e.target.id=='refp')$('refp').hidden=true});
 document.addEventListener('click',e=>{if(!e.target.closest('#pmenu'))closeM()},true);
@@ -448,15 +448,15 @@ requestAnimationFrame(frame);
 import{initializeApp}from"https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
 import{getDatabase,ref,set,get,push,remove,update,onValue,onChildAdded,onDisconnect,query,orderByKey,startAfter,limitToLast,serverTimestamp}from"https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js";
 const db=getDatabase(initializeApp({apiKey:"AIzaSyBxM53Ez9o-d3Eptw0jIMPpBKjI3XzVjKY",authDomain:"fourier-a6fad.firebaseapp.com",databaseURL:"https://fourier-a6fad-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"fourier-a6fad",appId:"1:261825878308:web:83792ab6407d1fb043bbb1"}));
-window.FB={async exists(n,join){const v=(await get(ref(db,'rooms/'+n+'/p'))).val()||{};const o=await new Promise(r=>onValue(ref(db,'.info/serverTimeOffset'),x=>r(x.val()||0),{onlyOnce:true}));const now=Date.now()+o;return Object.values(v).some(x=>x&&x.nm&&(join?(x.host&&now-(x.ts||0)<600000):(!x.off&&now-(x.ts||0)<300000)))},
+window.FB={async exists(n,join){const v=(await get(ref(db,'rooms/'+n+'/p'))).val()||{};const o=await new Promise(r=>onValue(ref(db,'.info/serverTimeOffset'),x=>r(x.val()||0),{onlyOnce:true}));const now=Date.now()+o;return Object.values(v).some(x=>x&&x.nm&&(join?(x.host&&now-(x.ts||0)<1800000):(!x.off&&now-(x.ts||0)<300000)))},
 async join(name,fresh){
  const id=Math.random().toString(36).slice(2,10),base='rooms/'+name,pr=ref(db,base+'/p/'+id),ev=ref(db,base+'/ev'),hs={},ps=[],P={},un=[],seen={};let raw={},peers=[],left=false,dcm='';
  if(fresh)await remove(ref(db,base));
- const regDC=async()=>{if(left)return;const alive=peers.some(p=>!p.isMe&&!p.presence.off);dcm=alive?'off':'room';await onDisconnect(ref(db,base)).cancel();if(left)return;if(dcm=='off')onDisconnect(pr).update({off:true});else onDisconnect(ref(db,base)).remove()};
+ const regDC=async()=>{if(left)return;dcm='off';await onDisconnect(ref(db,base)).cancel();if(left)return;onDisconnect(pr).update({off:true})};
  const calc=()=>{const now=Date.now();peers=[];for(const k of Object.keys(raw)){const v=raw[k]||{};if(!seen[k]||seen[k].ts!==v.ts)seen[k]={ts:v.ts,at:now};const idle=now-seen[k].at,off=k==id?false:(!!v.off||idle>15000);
-  if(k!=id){if(!v.nm){if(idle>20000)remove(ref(db,base+'/p/'+k));continue}if(off&&idle>(v.host?600000:90000)){remove(ref(db,base+'/p/'+k));continue}}
+  if(k!=id){if(!v.nm){if(idle>20000)remove(ref(db,base+'/p/'+k));continue}if(off&&idle>(v.host?1800000:90000)){remove(ref(db,base+'/p/'+k));continue}}
   peers.push({peer:k,isMe:k==id,presence:Object.assign({},v,{off})})}
-  const alive=peers.some(p=>!p.isMe&&!p.presence.off);if(dcm&&(alive?'off':'room')!=dcm)regDC();ps.forEach(f=>f(peers))};
+  ps.forEach(f=>f(peers))};
  un.push(onValue(ref(db,base+'/p'),s=>{raw=s.val()||{};calc()}));
  const put=()=>{P.ts=serverTimestamp();delete P.off;return set(pr,JSON.parse(JSON.stringify(P)))};
  un.push(onValue(ref(db,'.info/connected'),s=>{if(s.val()&&!left){regDC();put()}}));
