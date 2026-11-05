@@ -5,22 +5,42 @@
 body{margin:auto;max-width:900px;padding:10px;background:var(--bg);color:var(--tx);font:15px/1.5 "Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif}
 h1{font-size:20px;color:var(--c1);margin:4px 0}
 .row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0;align-items:center}
-button{background:transparent;color:var(--c1);border:1.5px solid var(--c1);border-radius:8px;padding:6px 12px;font:inherit}
+button{background:transparent;color:var(--c1);border:1.5px solid var(--c1);border-radius:8px;padding:6px 12px;font:inherit;cursor:pointer}
 button.g{color:var(--mu);border-color:#3a3f66}button.on{box-shadow:0 0 8px #19f3ff88;background:#19f3ff18}
+input,select,textarea{background:var(--pn);color:var(--tx);border:1px solid #2c3060;border-radius:8px;padding:6px 8px;font:inherit}
 .ed{position:relative;height:52dvh;border:1px solid #2c3060;border-radius:8px;background:var(--pn);overflow:hidden}
 .ed pre,.ed textarea{position:absolute;inset:0;margin:0;padding:8px;font:16px/22px ui-monospace,Menlo,Consolas,"Noto Sans Mono CJK TC",monospace;white-space:pre;border:0;letter-spacing:0;tab-size:2}
 .ed pre{pointer-events:none;overflow:hidden;color:#cfd6ff}
-.ed textarea{background:transparent;color:transparent;caret-color:#fff;resize:none;outline:none;overflow:auto}
+.ed textarea{background:transparent;color:transparent;caret-color:#fff;resize:none;outline:none;overflow:auto;border-radius:0}
 .l{display:block;height:22px;overflow:visible}.l.e{color:var(--bad);background:#ff5a6e26}.l.w{color:var(--warn);background:#ffb34726}
 #msgs div{padding:3px 0;cursor:pointer}#msgs .e{color:var(--bad)}#msgs .w{color:var(--warn)}#msgs .ok{color:var(--c1);cursor:default}
 small{color:var(--mu)}
+#dw[hidden]{display:none}
+#imp{flex:1 1 260px;height:54px;font:13px/1.3 ui-monospace,Menlo,Consolas,monospace;resize:vertical}
+#dc{display:block;touch-action:none;border:1px solid #2c3060;border-radius:10px;background:#0b0b1e;margin:6px auto;max-width:100%;user-select:none;-webkit-user-select:none}
+.tl button{min-width:58px}.sw{width:26px;height:26px;border-radius:50%;padding:0;border:2px solid #0000}.sw.on{border-color:#fff;box-shadow:0 0 8px #fff}
+#out{width:100%;height:84px;font:12px/1.35 ui-monospace,Menlo,Consolas,monospace}
+label.ck{display:inline-flex;gap:4px;align-items:center;color:var(--mu)}
+.meta input{width:130px}.meta #ma{width:150px}
 </style></head><body>
 <h1>題庫編輯器</h1>
-<small>改完後按「複製全部」，到 GitHub 開啟同名檔案，按鉛筆圖示編輯，全選貼上，再按 Commit changes。出錯的那一行會立刻變紅。</small>
-<div class="row"><button id="tw" class="on">文字題（words.txt）</button><button id="ts" class="g">圖庫（shapes.json）</button></div>
-<div class="ed"><pre id="hl"></pre><textarea id="ta" spellcheck="false" wrap="off" autocomplete="off" autocapitalize="off"></textarea></div>
+<small>文字題、圖庫可直接改文字；「繪製圖形」可用工具畫出題庫圖形並輸出一行格式。改完按「複製全部」，到 GitHub 開啟同名檔案，按鉛筆圖示編輯，全選貼上，再按 Commit changes。</small>
+<div class="row"><button id="tw" class="on">文字題（words.txt）</button><button id="ts" class="g">圖庫（shapes.json）</button><button id="td" class="g">繪製圖形</button></div>
+<div id="tv"><div class="ed"><pre id="hl"></pre><textarea id="ta" spellcheck="false" wrap="off" autocomplete="off" autocapitalize="off"></textarea></div>
 <div class="row"><button id="cp">複製全部</button><button id="dl" class="g">下載檔案</button><button id="rl" class="g">重新載入線上版本</button><span id="st"></span></div>
-<div id="msgs"></div>
+<div id="msgs"></div></div>
+<div id="dw" hidden>
+ <div class="row"><textarea id="imp" placeholder="把複製的題庫格式（shapes.json 裡的一行）貼在這裡，會自動顯示圖形，可以繼續繪圖或調整" spellcheck="false"></textarea><button id="impb">載入</button><select id="impsel" hidden></select></div>
+ <div class="row meta">名稱<input id="mn" maxlength="12" placeholder="例如：貓"> 別名<input id="ma" placeholder="用 | 分隔"> 星數<select id="ml"><option value="0">0 ☆</option><option value="1">1 ★</option><option value="2">2 ★★</option><option value="3">3 ★★★</option></select> 類別<input id="mc" list="cats" placeholder="動物"><datalist id="cats"></datalist><label class="ck"><input type="checkbox" id="mg">強制同一組圓</label></div>
+ <div class="row tl" id="tools"></div>
+ <canvas id="dc"></canvas>
+ <div class="row" id="pal"></div>
+ <div class="row"><label class="ck"><input type="checkbox" id="oa" checked>手繪自動修正</label><label class="ck"><input type="checkbox" id="og">格線吸附</label><label class="ck"><input type="checkbox" id="op" checked>端點吸附</label><label class="ck"><input type="checkbox" id="oang">直線吸附角度</label><label class="ck"><input type="checkbox" id="oclose">封閉（折線/曲線）</label></div>
+ <div class="row" id="acts"></div>
+ <small id="dh"></small>
+ <textarea id="out" readonly></textarea>
+ <div class="row"><button id="ocp">複製這一行</button><button id="oadd" class="g">加入 shapes.json 分頁</button><span id="dst"></span></div>
+</div>
 <script>
 const $=s=>document.querySelector(s),esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 function vw(t){const out=[],seen=new Map();t.split('\n').forEach((raw,i)=>{const l=raw.trim();if(!l||l[0]=='#')return;const p=l.split(/[,，]/),names=(p[0]||'').split('|').map(x=>x.trim());let bad='';
@@ -48,13 +68,113 @@ function render(){const f=F[cur],ta=$('#ta'),t=ta.value;f.val=t;const errs=f.v(t
  $('#hl').scrollTop=ta.scrollTop;$('#hl').scrollLeft=ta.scrollLeft;
  const ne=errs.filter(e=>e.t=='e').length,nw=errs.length-ne;
  $('#st').textContent=ne?'❌ '+ne+' 個錯誤'+(nw?'、'+nw+' 個提醒':''):(nw?'⚠ '+nw+' 個提醒':'✓ 沒問題');
- $('#msgs').innerHTML=errs.map(e=>'<div class="'+e.t+'" data-l="'+e.l+'">第 '+(e.l+1)+' 行：'+esc(e.m)+'</div>').join('')||'<div class="ok">✓ 沒有發現問題</div>'}
-function load(k){fetch(F[k].name+'?'+Date.now()).then(r=>r.ok?r.text():Promise.reject()).then(t=>{F[k].val=t;if(cur==k){$('#ta').value=t;render()}}).catch(()=>{if(cur==k)$('#st').textContent='無法從線上載入（直接開檔案時正常），可以自己貼上內容'})}
-function tab(k){F[cur].val=$('#ta').value;cur=k;$('#tw').className=k=='w'?'on':'g';$('#ts').className=k=='s'?'on':'g';$('#ta').value=F[k].val;render()}
+ $('#msgs').innerHTML=errs.map(e=>'<div class="'+e.t+'" data-l="'+e.l+'">第 '+(e.l+1)+' 行：'+esc(e.m)+'</div>').join('')||'<div class="ok">✓ 沒有發現問題</div>';fillCats()}
+function load(k){fetch(F[k].name+'?'+Date.now()).then(r=>r.ok?r.text():Promise.reject()).then(t=>{F[k].val=t;if(cur==k){$('#ta').value=t;render()}fillCats()}).catch(()=>{if(cur==k)$('#st').textContent='無法從線上載入（直接開檔案時正常），可以自己貼上內容'})}
+function tab(k){if(cur!='d')F[cur].val=$('#ta').value;if(k=='d'){cur='d';$('#tv').hidden=true;$('#dw').hidden=false;$('#tw').className='g';$('#ts').className='g';$('#td').className='on';resizeC();return}
+ cur=k;$('#tv').hidden=false;$('#dw').hidden=true;$('#tw').className=k=='w'?'on':'g';$('#ts').className=k=='s'?'on':'g';$('#td').className='g';$('#ta').value=F[k].val;render()}
 $('#ta').addEventListener('input',render);$('#ta').addEventListener('scroll',()=>{$('#hl').scrollTop=$('#ta').scrollTop;$('#hl').scrollLeft=$('#ta').scrollLeft});
-$('#tw').onclick=()=>tab('w');$('#ts').onclick=()=>tab('s');$('#rl').onclick=()=>load(cur);
+$('#tw').onclick=()=>tab('w');$('#ts').onclick=()=>tab('s');$('#td').onclick=()=>tab('d');$('#rl').onclick=()=>load(cur);
 $('#msgs').onclick=e=>{const d=e.target.closest('[data-l]');if(!d)return;const ta=$('#ta'),l=+d.dataset.l,ls=ta.value.split('\n');let pos=0;for(let i=0;i<l;i++)pos+=ls[i].length+1;ta.focus();ta.setSelectionRange(pos,pos+ls[l].length);ta.scrollTop=Math.max(0,(l-3)*22)};
 $('#cp').onclick=()=>{const ta=$('#ta');const ok=()=>$('#st').textContent='已複製，可以貼到 GitHub 了';const fb=()=>{ta.focus();ta.select();try{document.execCommand('copy')?ok():$('#st').textContent='請長按全選後自己複製'}catch(e){$('#st').textContent='請長按全選後自己複製'}};try{navigator.clipboard.writeText(ta.value).then(ok,fb)}catch(e){fb()}};
 $('#dl').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([$('#ta').value],{type:'text/plain'}));a.download=F[cur].name;a.click()};
-load('w');load('s');render();
+function fillCats(){const s=new Set();try{F.w.val.split('\n').forEach(l=>{l=l.trim();if(l&&l[0]!='#'){const p=l.split(/[,，]/);if(p[2])s.add(p[2].trim())}})}catch(e){}try{JSON.parse(F.s.val).forEach(o=>o.c&&s.add(o.c))}catch(e){}
+ const dl=$('#cats');if(dl&&dl.dataset.n!=[...s].join())(dl.dataset.n=[...s].join(),dl.innerHTML=[...s].map(c=>'<option value="'+esc(c)+'">').join(''))}
+/* ================= 繪製圖形 ================= */
+const COLS=['#ff3b4e','#ff9a2e','#ffe83d','#47ff8a','#3d8bff','#6a5cff','#c04dff','#9aa0b4','#b5763f','#f2e0b8','#ffffff','#19f3ff','#ff3df0','#ffe83d','#47ff8a','#ff8a3d'];
+const TOOLS=[['sel','選取微調'],['free','手繪'],['line','直線'],['poly','折線'],['arc','弧線'],['circle','圓'],['ell','橢圓'],['curve','曲線'],['addpt','＋加點']];
+let tool='sel',shapes=[],selI=-1,selP=-1,col=10,draft=null,drag=null,hist=[],redo=[],cv=$('#dc'),cx=cv.getContext('2d'),SZ=400,DPR=window.devicePixelRatio||1;
+const HINT={sel:'點圖形選取；拖曳圓點微調位置；拖曳線條本體可整條移動。選到圓點後按「刪除點」。',free:'直接畫，放開後會自動修正成直線、圓、弧線或平滑曲線（可在下方關閉自動修正）。',line:'拖曳畫出直線。',poly:'一個個點出轉角，按「完成」或雙擊結束。',arc:'依序點三點：起點、弧線上一點、終點。',circle:'從圓心拖曳到圓邊。',ell:'從中心拖曳到角落，畫出橢圓。',curve:'點出幾個控制點，會自動連成圓滑曲線；按「完成」或雙擊結束。',addpt:'點選取中圖形的線段，就會在那裡加一個點。'};
+const U2P=u=>(u+10)/120*SZ,P2U=p=>p/SZ*120-10;
+function cl(a,b,t){return Math.max(a,Math.min(b,t))}
+function crs(P,closed,n){const m=P.length;if(m<2)return P.slice();const out=[];const g=i=>closed?P[(i+m)%m]:P[cl(0,m-1,i)];for(let i=0;i<(closed?m:m-1);i++){const p0=g(i-1),p1=g(i),p2=g(i+1),p3=g(i+2);for(let j=0;j<n;j++){const t=j/n,t2=t*t,t3=t2*t;out.push([0,1].map(k=>.5*((2*p1[k])+(-p0[k]+p2[k])*t+(2*p0[k]-5*p1[k]+4*p2[k]-p3[k])*t2+(-p0[k]+3*p1[k]-3*p2[k]+p3[k])*t3)))}}out.push(closed?P[0]:P[m-1]);return out}
+function ellp(cx0,cy0,rx,ry,n=64){const o=[];for(let i=0;i<=n;i++){const a=i/n*Math.PI*2;o.push([cx0+rx*Math.cos(a),cy0+ry*Math.sin(a)])}return o}
+function circ3(a,b,c){const d=2*(a[0]*(b[1]-c[1])+b[0]*(c[1]-a[1])+c[0]*(a[1]-b[1]));if(Math.abs(d)<1e-6)return null;const ux=((a[0]**2+a[1]**2)*(b[1]-c[1])+(b[0]**2+b[1]**2)*(c[1]-a[1])+(c[0]**2+c[1]**2)*(a[1]-b[1]))/d,uy=((a[0]**2+a[1]**2)*(c[0]-b[0])+(b[0]**2+b[1]**2)*(a[0]-c[0])+(c[0]**2+c[1]**2)*(b[0]-a[0]))/d;return[ux,uy,Math.hypot(a[0]-ux,a[1]-uy)]}
+function arc3(p){const[a,m,b]=p,c=circ3(a,m,b);if(!c)return[a,b];const[ux,uy,r]=c,ang=q=>Math.atan2(q[1]-uy,q[0]-ux);let a0=ang(a),am=ang(m),a1=ang(b);const norm=x=>{while(x<0)x+=2*Math.PI;while(x>=2*Math.PI)x-=2*Math.PI;return x};const dm=norm(am-a0),d1=norm(a1-a0);let sweep=dm<=d1?d1:d1-2*Math.PI;const n=Math.max(12,Math.ceil(Math.abs(sweep)*r/2.5));const o=[];for(let i=0;i<=n;i++){const t=a0+sweep*i/n;o.push([ux+r*Math.cos(t),uy+r*Math.sin(t)])}return o}
+function samp(sh){const p=sh.p;switch(sh.t){case'line':return[p[0],p[1]];case'poly':return sh.closed?[...p,p[0]]:p.slice();case'curve':return crs(p,sh.closed,8);case'arc':return arc3(p);case'circle':{const R=Math.hypot(p[1][0]-p[0][0],p[1][1]-p[0][1]);return ellp(p[0][0],p[0][1],R,R)}case'ell':return ellp(p[0][0],p[0][1],Math.abs(p[1][0]-p[0][0]),Math.abs(p[2][1]-p[0][1]))}return[]}
+function snapPt(u,from){let q=u.slice();if($('#op').checked){let best=3.2,bp=null;shapes.forEach((s,i)=>{if(drag&&drag.si===i)return;s.p.forEach(pt=>{const d=Math.hypot(pt[0]-u[0],pt[1]-u[1]);if(d<best){best=d;bp=pt}})});if(bp)return bp.slice()}
+ if(from&&$('#oang').checked){const dx=u[0]-from[0],dy=u[1]-from[1],L=Math.hypot(dx,dy),a=Math.round(Math.atan2(dy,dx)/(Math.PI/4))*(Math.PI/4);q=[from[0]+L*Math.cos(a),from[1]+L*Math.sin(a)]}
+ if($('#og').checked)q=[Math.round(q[0]/5)*5,Math.round(q[1]/5)*5];return q}
+function pos(e){const r=cv.getBoundingClientRect();return[P2U((e.clientX-r.left)/r.width*SZ),P2U((e.clientY-r.top)/r.height*SZ)]}
+function distSeg(p,a,b){const dx=b[0]-a[0],dy=b[1]-a[1],L=dx*dx+dy*dy||1e-9;let t=((p[0]-a[0])*dx+(p[1]-a[1])*dy)/L;t=cl(0,1,t);return Math.hypot(p[0]-a[0]-t*dx,p[1]-a[1]-t*dy)}
+function hitShape(u,tol){let bi=-1,bd=tol,bs=-1;for(let i=shapes.length-1;i>=0;i--){const a=samp(shapes[i]);for(let j=0;j<a.length-1;j++){const d=distSeg(u,a[j],a[j+1]);if(d<bd){bd=d;bi=i;bs=j}}}return[bi,bs]}
+function rdp(P,e){if(P.length<3)return P.slice();let md=0,mi=0;const a=P[0],b=P[P.length-1];for(let i=1;i<P.length-1;i++){const d=distSeg(P[i],a,b);if(d>md){md=d;mi=i}}return md>e?rdp(P.slice(0,mi+1),e).slice(0,-1).concat(rdp(P.slice(mi),e)):[a,b]}
+function circFit(P){const n=P.length;let sx=0,sy=0,sxx=0,syy=0,sxy=0,sz=0,sxz=0,syz=0;P.forEach(([x,y])=>{const z=x*x+y*y;sx+=x;sy+=y;sxx+=x*x;syy+=y*y;sxy+=x*y;sz+=z;sxz+=x*z;syz+=y*z});
+ const A=[[sxx,sxy,sx],[sxy,syy,sy],[sx,sy,n]],B=[-sxz,-syz,-sz];const det=m=>m[0][0]*(m[1][1]*m[2][2]-m[1][2]*m[2][1])-m[0][1]*(m[1][0]*m[2][2]-m[1][2]*m[2][0])+m[0][2]*(m[1][0]*m[2][1]-m[1][1]*m[2][0]);const D=det(A);if(Math.abs(D)<1e-9)return null;
+ const sol=[0,1,2].map(k=>{const M=A.map((r,i)=>r.map((v,j)=>j==k?B[i]:v));return det(M)/D});const ux=-sol[0]/2,uy=-sol[1]/2,r2=ux*ux+uy*uy-sol[2];if(r2<=0)return null;const r=Math.sqrt(r2);let e=0;P.forEach(([x,y])=>e+=Math.abs(Math.hypot(x-ux,y-uy)-r));return{c:[ux,uy],r,err:e/n/r}}
+function autoFix(raw){const P=rdp(raw,.4);let L=0;for(let i=1;i<raw.length;i++)L+=Math.hypot(raw[i][0]-raw[i-1][0],raw[i][1]-raw[i-1][1]);const a=raw[0],b=raw[raw.length-1],ch=Math.hypot(b[0]-a[0],b[1]-a[1]);if(L<2.5)return null;
+ let dev=0;raw.forEach(p=>dev=Math.max(dev,distSeg(p,a,b)));if(ch>.8*L&&dev<.045*L+.4)return{t:'line',p:[a,b]};
+ const closedish=ch<.2*L&&L>12;
+ if(closedish){const f=circFit(raw);if(f&&f.err<.07&&f.r>2)return{t:'circle',p:[f.c,[f.c[0]+f.r,f.c[1]]]};
+  const xs=raw.map(p=>p[0]),ys=raw.map(p=>p[1]),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),ex=(x0+x1)/2,ey=(y0+y1)/2,rx=(x1-x0)/2,ry=(y1-y0)/2;if(rx>2&&ry>2){let e=0;raw.forEach(([x,y])=>e+=Math.abs(Math.hypot((x-ex)/rx,(y-ey)/ry)-1));if(e/raw.length<.09)return{t:'ell',p:[[ex,ey],[ex+rx,ey],[ex,ey+ry]]}}
+  const Q=rdp(raw,Math.max(1.2,L*.012));if(Q.length>=3)Q.pop();return{t:'curve',p:Q,closed:true}}
+ const f=circFit(raw);if(f&&f.err<.05&&f.r>3&&f.r<400){const ang=p=>Math.atan2(p[1]-f.c[1],p[0]-f.c[0]);let tot=0;for(let i=1;i<raw.length;i++){let d=ang(raw[i])-ang(raw[i-1]);while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;tot+=d}if(Math.abs(tot)>.35&&Math.abs(tot)<5.6){const am=ang(raw[0])+tot/2;return{t:'arc',p:[a,[f.c[0]+f.r*Math.cos(am),f.c[1]+f.r*Math.sin(am)],b]}}}
+ const C=rdp(raw,3.2);if(C.length>=3&&C.length<=7){let sharp=0;for(let i=1;i<C.length-1;i++){const v1=[C[i][0]-C[i-1][0],C[i][1]-C[i-1][1]],v2=[C[i+1][0]-C[i][0],C[i+1][1]-C[i][1]];const cs=(v1[0]*v2[0]+v1[1]*v2[1])/(Math.hypot(...v1)*Math.hypot(...v2)||1);if(cs<.5)sharp++}if(sharp>=C.length-2&&raw.length>8){let md=0;raw.forEach(p=>{let m=1e9;for(let i=0;i<C.length-1;i++)m=Math.min(m,distSeg(p,C[i],C[i+1]));md=Math.max(md,m)});if(md<2.2)return{t:'poly',p:C}}}
+ return{t:'curve',p:rdp(raw,Math.max(1.0,L*.01))}}
+function push(){hist.push(JSON.stringify(shapes));if(hist.length>80)hist.shift();redo=[]}
+function undo(){if(!hist.length)return;redo.push(JSON.stringify(shapes));shapes=JSON.parse(hist.pop());selI=-1;selP=-1;draw();out()}
+function redoF(){if(!redo.length)return;hist.push(JSON.stringify(shapes));shapes=JSON.parse(redo.pop());selI=-1;selP=-1;draw();out()}
+function addShape(s){push();s.c=col;shapes.push(s);selI=shapes.length-1;selP=-1;draw();out()}
+function finishDraft(){if(!draft)return;const p=draft.p;if(draft.t=='poly'&&p.length>=2){addShape({t:'poly',p:p.slice(),closed:$('#oclose').checked})}else if(draft.t=='curve'&&p.length>=2){addShape({t:'curve',p:p.slice(),closed:$('#oclose').checked&&p.length>=3})}draft=null;draw()}
+function handles(sh){return sh.t=='circle'?[sh.p[0],sh.p[1]]:sh.p}
+cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);const raw=pos(e);const u=snapPt(raw,draft&&draft.p&&draft.p.length?draft.p[draft.p.length-1]:null);
+ if(tool=='sel'){if(selI>=0){const hs=handles(shapes[selI]);let bi=-1,bd=12/SZ*120;hs.forEach((h,i)=>{const d=Math.hypot(h[0]-raw[0],h[1]-raw[1]);if(d<bd){bd=d;bi=i}});if(bi>=0){push();selP=bi;drag={k:'pt',si:selI,pi:bi};draw();return}}
+  const[i]=hitShape(raw,10/SZ*120);if(i>=0){if(i!==selI)selP=-1;selI=i;push();drag={k:'mv',si:i,last:raw};draw()}else{selI=-1;selP=-1;draw()}return}
+ if(tool=='addpt'){if(selI<0)return;const sh=shapes[selI];if(!['line','poly','curve'].includes(sh.t))return;const a=sh.t=='curve'?sh.p:(sh.closed?[...sh.p,sh.p[0]]:sh.p);let bj=-1,bd=14/SZ*120;for(let j=0;j<a.length-1;j++){const d=distSeg(raw,a[j],a[j+1]);if(d<bd){bd=d;bj=j}}if(bj>=0){push();if(sh.t=='line')sh.t='poly';sh.p.splice(bj+1,0,u);selP=bj+1;draw();out()}return}
+ if(tool=='free'){drag={k:'free',pts:[raw]};return}
+ if(tool=='line'||tool=='circle'||tool=='ell'){drag={k:'shape',a:u};draft={t:tool,p:[u,u]};return}
+ if(tool=='poly'||tool=='curve'){if(!draft)draft={t:tool,p:[]};draft.p.push(u);draft.cursor=u;draw();return}
+ if(tool=='arc'){if(!draft)draft={t:'arc',p:[]};draft.p.push(u);if(draft.p.length==3){addShape({t:'arc',p:draft.p});draft=null}draw();return}});
+cv.addEventListener('pointermove',e=>{const raw=pos(e);if(drag){if(drag.k=='pt'){const sh=shapes[drag.si],u=snapPt(raw,null);if(sh.t=='ell'){if(drag.pi==0){const dx=u[0]-sh.p[0][0],dy=u[1]-sh.p[0][1];sh.p.forEach(q=>{q[0]+=dx;q[1]+=dy})}else if(drag.pi==1)sh.p[1]=[u[0],sh.p[0][1]];else sh.p[2]=[sh.p[0][0],u[1]]}else if(sh.t=='circle'&&drag.pi==0){const dx=u[0]-sh.p[0][0],dy=u[1]-sh.p[0][1];sh.p.forEach(q=>{q[0]+=dx;q[1]+=dy})}else sh.p[drag.pi]=u;draw()}
+  else if(drag.k=='mv'){const dx=raw[0]-drag.last[0],dy=raw[1]-drag.last[1];shapes[drag.si].p.forEach(q=>{q[0]+=dx;q[1]+=dy});drag.last=raw;draw()}
+  else if(drag.k=='free'){drag.pts.push(raw);draw()}
+  else if(drag.k=='shape'){const u=snapPt(raw,tool=='line'?drag.a:null);if(tool=='line')draft.p=[drag.a,u];else if(tool=='circle')draft.p=[drag.a,u];else draft.p=[drag.a,[u[0],drag.a[1]],[drag.a[0],u[1]]];draw()}return}
+ if(draft&&(draft.t=='poly'||draft.t=='curve'||draft.t=='arc')){draft.cursor=snapPt(raw,draft.p[draft.p.length-1]);draw()}});
+cv.addEventListener('pointerup',e=>{if(!drag)return;const d=drag;drag=null;
+ if(d.k=='pt'||d.k=='mv'){out();draw();return}
+ if(d.k=='free'){const raw=d.pts;if(raw.length<2||Math.hypot(raw[0][0]-raw[raw.length-1][0],raw[0][1]-raw[raw.length-1][1])<.6&&raw.length<6){draw();return}let s;if($('#oa').checked)s=autoFix(raw);else s={t:'curve',p:rdp(raw,.8)};if(s){if(s.t=='curve'&&s.p.length<2)s.t='line';addShape(s)}draw();return}
+ if(d.k=='shape'&&draft){const p=draft.p;let ok=false,s=null;if(draft.t=='line'){ok=Math.hypot(p[1][0]-p[0][0],p[1][1]-p[0][1])>.8;s={t:'line',p}}else if(draft.t=='circle'){ok=Math.hypot(p[1][0]-p[0][0],p[1][1]-p[0][1])>.8;s={t:'circle',p}}else{ok=Math.abs(p[1][0]-p[0][0])>.8&&Math.abs(p[2][1]-p[0][1])>.8;s={t:'ell',p}}draft=null;if(ok)addShape(s);else draw()}});
+cv.addEventListener('dblclick',()=>{if(draft&&(draft.t=='poly'||draft.t=='curve')){draft.p.pop();finishDraft()}});
+function draw(){const w=SZ;cx.setTransform(DPR,0,0,DPR,0,0);cx.clearRect(0,0,w,w);
+ cx.strokeStyle='#1c2048';cx.lineWidth=1;for(let u=0;u<=100;u+=10){cx.beginPath();cx.moveTo(U2P(u),U2P(0));cx.lineTo(U2P(u),U2P(100));cx.moveTo(U2P(0),U2P(u));cx.lineTo(U2P(100),U2P(u));cx.stroke()}
+ cx.strokeStyle='#3a3f66';cx.strokeRect(U2P(0),U2P(0),U2P(100)-U2P(0),U2P(100)-U2P(0));cx.beginPath();cx.moveTo(U2P(50),U2P(0));cx.lineTo(U2P(50),U2P(100));cx.moveTo(U2P(0),U2P(50));cx.lineTo(U2P(100),U2P(50));cx.stroke();
+ const stroke=(a,c,wd)=>{if(a.length<2)return;cx.strokeStyle=c;cx.lineWidth=wd;cx.lineCap=cx.lineJoin='round';cx.shadowColor=c;cx.shadowBlur=6;cx.beginPath();a.forEach((q,i)=>i?cx.lineTo(U2P(q[0]),U2P(q[1])):cx.moveTo(U2P(q[0]),U2P(q[1])));cx.stroke();cx.shadowBlur=0};
+ shapes.forEach((s,i)=>stroke(samp(s),COLS[s.c],i===selI?3.4:2.6));
+ if(drag&&drag.k=='free')stroke(drag.pts,'#ffffff88',2);
+ if(draft){const c=COLS[col];if(draft.t=='line'||draft.t=='circle'||draft.t=='ell')stroke(samp(draft),c+'aa',2.2);else if(draft.t=='poly'||draft.t=='curve'){const p=draft.p.concat(draft.cursor?[draft.cursor]:[]);stroke(draft.t=='curve'?crs(p,false,8):p,c+'aa',2.2);draft.p.forEach(q=>dot(q,'#fff'))}else if(draft.t=='arc'){const p=draft.p.concat(draft.cursor?[draft.cursor]:[]);stroke(p.length==3?arc3(p):p,c+'aa',2.2);draft.p.forEach(q=>dot(q,'#fff'))}}
+ if(selI>=0&&shapes[selI]&&tool!='free'){handles(shapes[selI]).forEach((h,i)=>dot(h,i===selP?'#ff3df0':'#19f3ff',i===selP?7:6))}
+}
+function dot(q,c,r=4){cx.fillStyle=c;cx.beginPath();cx.arc(U2P(q[0]),U2P(q[1]),r,0,7);cx.fill();cx.strokeStyle='#000a';cx.lineWidth=1;cx.stroke()}
+function resizeC(){const w=Math.max(260,Math.min(620,$('#dw').clientWidth-6));SZ=w;cv.style.width=w+'px';cv.style.height=w+'px';cv.width=Math.round(w*DPR);cv.height=Math.round(w*DPR);draw()}
+addEventListener('resize',()=>{if(cur=='d')resizeC()});
+function out(){const base=shapes.map(s=>({pts:samp(s),c:s.c})).filter(o=>o.pts.length>=2);const S=base.map(o=>{const r=[];o.pts.forEach(q=>{const p=[Math.round(q[0]*10)/10,Math.round(q[1]*10)/10];if(!r.length||r[r.length-1][0]!==p[0]||r[r.length-1][1]!==p[1])r.push(p)});return r}).filter(a=>a.length>=2);
+ const names=($('#ma').value||'').split('|').map(x=>x.trim()).filter(Boolean);const o={n:($('#mn').value||'').trim(),al:names,lv:+$('#ml').value,c:($('#mc').value||'').trim(),k:base.filter(o=>o.pts.length>=2).map(o=>o.c).slice(0,S.length),s:S};if($('#mg').checked)o.g=S.map(()=>0);
+ const line=JSON.stringify(o);$('#out').value=line;const m=!o.n?'請先填名稱':!o.c?'請先填類別':!S.length?'還沒有畫任何筆畫':chk(o);$('#dst').textContent=m?'⚠ '+m:'✓ 格式沒問題（'+S.length+' 筆）';return line}
+function loadLine(txt){let t=txt.trim();if(!t)return;t=t.replace(/,\s*$/,'');let o;try{o=JSON.parse(t)}catch(e){try{o=JSON.parse('['+t+']')}catch(e2){$('#dst').textContent='❌ 看不懂這段格式：'+e.message;return}}
+ if(Array.isArray(o)){const sel=$('#impsel');if(o.length>1){sel.hidden=false;sel.innerHTML=o.map((x,i)=>'<option value="'+i+'">'+esc(String(x.n))+'</option>').join('');sel.onchange=()=>applyObj(o[+sel.value]);applyObj(o[0]);return}o=o[0]}
+ $('#impsel').hidden=true;applyObj(o)}
+function applyObj(o){const m=chk(o);if(m){$('#dst').textContent='❌ '+m;return}push();$('#mn').value=o.n;$('#ma').value=o.al.join('|');$('#ml').value=String(Math.min(3,o.lv));$('#mc').value=o.c;$('#mg').checked=!!o.g;
+ shapes=o.s.map((st,i)=>{const P=rdp(st.map(q=>[q[0],q[1]]),.15);const closed=st.length>3&&Math.hypot(st[0][0]-st[st.length-1][0],st[0][1]-st[st.length-1][1])<.3;return{t:'poly',p:closed?P.slice(0,-1):P,closed,c:o.k&&o.k[i]!=null?o.k[i]:11+i%5}});selI=-1;selP=-1;draw();out()}
+$('#impb').onclick=()=>loadLine($('#imp').value);$('#imp').addEventListener('input',()=>{clearTimeout(window.__it);window.__it=setTimeout(()=>loadLine($('#imp').value),250)});
+['#mn','#ma','#ml','#mc','#mg'].forEach(s=>$(s).addEventListener('input',out));$('#ml').addEventListener('change',out);
+$('#tools').innerHTML=TOOLS.map(([k,n])=>'<button data-t="'+k+'" class="'+(k==tool?'on':'g')+'">'+n+'</button>').join('')+'<button id="fin" class="g">完成</button>';
+$('#tools').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.id=='fin'){finishDraft();return}tool=b.dataset.t;draft=null;[...$('#tools').querySelectorAll('button[data-t]')].forEach(x=>x.className=x.dataset.t==tool?'on':'g');$('#dh').textContent=HINT[tool];draw()};
+$('#pal').innerHTML=COLS.map((c,i)=>'<button class="sw'+(i==col?' on':'')+'" data-c="'+i+'" style="background:'+c+'"></button>').join('');
+$('#pal').onclick=e=>{const b=e.target.closest('button');if(!b)return;col=+b.dataset.c;[...$('#pal').children].forEach((x,i)=>x.className='sw'+(i==col?' on':''));if(selI>=0){push();shapes[selI].c=col;draw();out()}};
+const ACTS=[['undo','↶ 復原'],['redo','↷ 重做'],['delp','刪除點'],['dels','刪除圖形'],['dup','複製圖形'],['flip','左右翻轉'],['sm','轉平滑曲線'],['pl','轉折線'],['clr','全部清除']];
+$('#acts').innerHTML=ACTS.map(([k,n])=>'<button class="g" data-a="'+k+'">'+n+'</button>').join('');
+$('#acts').onclick=e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset.a,sh=shapes[selI];
+ if(a=='undo')undo();else if(a=='redo')redoF();
+ else if(a=='delp'){if(sh&&selP>=0&&sh.p.length>2&&['line','poly','curve'].includes(sh.t)){push();sh.p.splice(selP,1);selP=-1;draw();out()}}
+ else if(a=='dels'){if(sh){push();shapes.splice(selI,1);selI=-1;selP=-1;draw();out()}}
+ else if(a=='dup'){if(sh){push();const c=JSON.parse(JSON.stringify(sh));c.p.forEach(q=>{q[0]+=3;q[1]+=3});shapes.push(c);selI=shapes.length-1;draw();out()}}
+ else if(a=='flip'){push();(sh?[sh]:shapes).forEach(s=>s.p.forEach(q=>q[0]=100-q[0]));draw();out()}
+ else if(a=='sm'){if(sh&&sh.t=='poly'){push();sh.p=rdp(sh.closed?[...sh.p,sh.p[0]]:sh.p,1.2);if(sh.closed)sh.p.pop();sh.t='curve';selP=-1;draw();out()}}
+ else if(a=='pl'){if(sh&&['curve','arc','circle','ell'].includes(sh.t)){push();let a2=samp(sh);const cl2=sh.t!='curve'&&sh.t!='arc'||sh.closed;a2=rdp(a2,.5);if(cl2&&a2.length>2)a2.pop();sh.p=a2;sh.t='poly';sh.closed=cl2;selP=-1;draw();out()}}
+ else if(a=='clr'){if(shapes.length&&confirm('確定全部清除？')){push();shapes=[];selI=-1;draw();out()}}};
+addEventListener('keydown',e=>{if(cur!='d')return;const tg=e.target.tagName;if(tg=='INPUT'||tg=='TEXTAREA'||tg=='SELECT')return;if((e.ctrlKey||e.metaKey)&&e.key=='z'){e.preventDefault();e.shiftKey?redoF():undo()}else if(e.key=='Delete'||e.key=='Backspace'){const sh=shapes[selI];if(sh&&selP>=0&&sh.p.length>2&&['line','poly','curve'].includes(sh.t)){push();sh.p.splice(selP,1);selP=-1}else if(sh){push();shapes.splice(selI,1);selI=-1}draw();out()}else if(e.key=='Enter')finishDraft();else if(e.key=='Escape'){draft=null;draw()}});
+$('#ocp').onclick=()=>{const t=$('#out'),ok=()=>$('#dst').textContent='已複製這一行';const fb=()=>{t.focus();t.select();try{document.execCommand('copy')?ok():$('#dst').textContent='請長按全選後自己複製'}catch(e){$('#dst').textContent='請長按全選後自己複製'}};try{navigator.clipboard.writeText(t.value).then(ok,fb)}catch(e){fb()}};
+$('#oadd').onclick=()=>{const line=out(),o=JSON.parse(line),m=!o.n?'請先填名稱':!o.c?'請先填類別':chk(o);if(m){$('#dst').textContent='⚠ '+m;return}
+ const txt=F.s.val.replace(/\r/g,''),L=txt.split('\n'),idx=L.map((x,i)=>x.trim()?i:-1).filter(i=>i>=0);let entries=[];if(idx.length>=2&&L[idx[0]].trim()=='['&&L[idx[idx.length-1]].trim()==']')entries=idx.slice(1,-1).map(i=>L[i].trim().replace(/,$/,''));
+ let rep=false;entries=entries.map(en=>{try{if(JSON.parse(en).n===o.n){rep=true;return line}}catch(e){}return en});if(!rep)entries.push(line);F.s.val='[\n'+entries.join(',\n')+'\n]\n';$('#dst').textContent=(rep?'已取代同名的圖：':'已加入：')+o.n+'（共 '+entries.length+' 筆），請切到「圖庫」分頁複製全部';fillCats()};
+$('#dh').textContent=HINT.sel;resizeC();load('w');load('s');render();out();
 </script></body></html>
