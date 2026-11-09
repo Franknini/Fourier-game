@@ -98,14 +98,14 @@ body.cad #tabs button{padding:2px 10px;font-size:13px}
  <div class="ib"><canvas id="icv"></canvas>
   <div class="ic" id="ic1"><p>拖曳邊框或四角，選擇要擷取的範圍；在框外拖曳可重新畫一個框。</p><button id="inext">下一步：轉成線條</button><button class="g" id="iul1">只當描圖底圖</button><button class="g" id="ifull">選取整張</button></div>
   <div class="ic" id="ic2" hidden>
-   <label>模式<select id="imode"><option value="edge">邊緣（線稿、照片）</option><option value="sil">輪廓（剪影、色塊）</option></select></label>
+   <label>模式<select id="imode"><option value="edge">邊緣（線稿、照片）</option><option value="sil">輪廓（剪影、色塊）</option><option value="line">線條圖（偵測線條與顏色）</option></select></label>
    <label class="ck"><input type="checkbox" id="iinv">反相（亮物體、暗背景）</label>
    <label class="ck"><input type="checkbox" id="icol">依顏色分層（自動偵測顏色）</label><label>顏色數量<input type="range" id="icn" min="2" max="12" value="4"></label><label>單色最小線長（較短的顏色段併入鄰近顏色）<input type="range" id="icml" min="3" max="120" value="20"></label><label class="ck"><input type="checkbox" id="ibg" checked>忽略背景色</label><label class="ck" title="關閉時只描物體與背景之間的外框，再依各處顏色上色並合併過短的顏色段"><input type="checkbox" id="ibd">也描色塊之間的交界線</label>
    <label>靈敏度（越高線越多）<input type="range" id="ithr" min="1" max="100" value="45"></label>
    <label>平滑去雜訊<input type="range" id="iblur" min="0" max="4" value="1"></label>
    <label>簡化程度（越高點越少）<input type="range" id="isimp" min="2" max="60" value="15"></label>
    <label>最小線長（濾掉短線）<input type="range" id="imin" min="3" max="80" value="14"></label>
-   <label>筆畫上限<input type="range" id="imax" min="1" max="40" value="12"></label>
+   <label>筆畫上限<input type="range" id="imax" min="1" max="400" value="40"></label>
    <label class="ck"><input type="checkbox" id="icrv">轉成平滑曲線</label>
    <label class="ck"><input type="checkbox" id="iclr">加入前清空現有圖形</label>
    <label class="ck"><input type="checkbox" id="ikeep" checked>同時保留為描圖底圖</label>
@@ -116,10 +116,9 @@ body.cad #tabs button{padding:2px 10px;font-size:13px}
 <div id="aid" hidden>
  <div class="aih"><b>🤖 AI 助手</b><span id="aist"></span><button class="g" id="aiset" title="設定">⚙</button><button class="g" id="aix" title="關閉">✕</button></div>
  <div id="aicfg" hidden>
-  <label>服務<select id="aipv"><option value="anthropic">Anthropic（Claude）</option><option value="openai">OpenAI 相容（OpenAI、OpenRouter、DeepSeek、Groq、本機 Ollama 等）</option><option value="gemini">Google Gemini</option></select></label>
-  <label id="aiurlw">API 網址（Base URL）<input id="aiurl" value="https://api.openai.com/v1" autocomplete="off"></label>
-  <label>模型名稱（請查服務商文件）<input id="aimd" list="aimdl" autocomplete="off"><datalist id="aimdl"></datalist></label>
-  <label>API 金鑰<input id="aikey" type="password" autocomplete="off"></label>
+  <label>服務<select id="aipv"><option value="anthropic">Anthropic（Claude）</option><option value="openai">OpenAI</option><option value="gemini">Google Gemini</option><option value="openrouter">OpenRouter</option><option value="deepseek">DeepSeek</option><option value="groq">Groq</option><option value="together">Together AI</option><option value="ollama">本機 Ollama（不用金鑰）</option><option value="lmstudio">本機 LM Studio（不用金鑰）</option></select></label>
+  <label>API 金鑰（只有這一格要自己填）<input id="aikey" type="password" autocomplete="off"></label>
+  <label>模型（填好金鑰後自動載入清單）<span style="display:flex;gap:6px"><select id="aimd" style="flex:1"></select><button class="g" id="aimdr" type="button" title="重新載入模型清單">↻</button></span></label>
   <label class="ck"><input type="checkbox" id="airem">記住金鑰（只存在這個瀏覽器）</label>
   <label>權限<select id="aiperm"><option value="confirm">危險操作需要我同意</option><option value="auto">全自動（完全不用問我）</option></select></label>
   <label class="ck"><input type="checkbox" id="aivis" checked>讓 AI 看畫布截圖（模型需支援圖片）</label>
@@ -288,8 +287,8 @@ $('#pal').onclick=e=>{const b=e.target.closest('button');if(!b)return;col=+b.dat
 const AB=(k,n,h)=>'<button class="g" data-a="'+k+'"'+(h?' title="快捷鍵 '+h+'"':'')+'>'+n+'</button>',DDm=(n,it)=>'<details class="dd"><summary>'+n+' ▾</summary><div class="ddm">'+it.map(x=>AB(...x)).join('')+'</div></details>';
 $('#acts').innerHTML='<div class="grp"><span class="gl">步驟</span>'+AB('undo','↶ 上一步','Ctrl+Z')+AB('redo','↷ 下一步','Ctrl+Y')+'</div>'
  +'<div class="grp"><span class="gl">編輯</span>'+AB('dup','複製圖形','Ctrl+D')+DDm('刪除',[['delp','刪除點','Del'],['dels','刪除圖形','Del'],['clr','全部清除','']])+DDm('變形',[['flip','左右翻轉','H'],['flipv','上下翻轉','Shift+H'],['rotp','旋轉 +15°','.'],['rotm','旋轉 −15°',','],['rev','反轉方向','R'],['sm','轉平滑曲線',''],['pl','轉折線','']])+DDm('筆序',[['ep','筆序提前','['],['lt','筆序延後',']']])+'</div>'
- +'<div class="grp"><span class="gl">顏色</span><span id="palslot"></span>'+AB('setc','套用目前色','')+'</div>'
- +'<div class="grp"><span class="gl">工具</span>'+AB('img','🖼 匯入圖片','')+AB('ai','🤖 AI 助手','')+AB('demo','▶ 開始演示','G')+AB('help','⌨ 快捷鍵','F1 或 ?')+DDm('提示詞',[['pgen','生圖：複製給 AI 生圖的提示詞',''],['pfmt','格式：複製給 AI 直接輸出題庫格式的提示詞','']])+'</div>';
+ +'<div class="grp"><span class="gl">顏色</span><span id="palslot"></span>'+AB('setc','套用目前色','')+'<details class="dd" id="rcdd"><summary>全部換色 ▾</summary><div class="ddm" style="padding:8px;min-width:210px"><label style="display:flex;flex-direction:column;gap:2px;font-size:12px">把這個顏色<select id="rcf"></select></label><label style="display:flex;flex-direction:column;gap:2px;font-size:12px;margin-top:6px">換成<select id="rct"></select></label><label class="ck" style="margin-top:6px"><input type="checkbox" id="rcs">只換選取的筆畫</label><button id="rcb" style="margin-top:6px">套用</button></div></details></div>'
+ +'<div class="grp"><span class="gl">工具</span>'+AB('img','🖼 匯入圖片','')+AB('ai','🤖 AI 助手','')+AB('demo','▶ 開始演示','G')+AB('help','⌨ 快捷鍵','F1 或 ?')+DDm('提示詞',[['pgen','生圖（色塊版）：適合轉成線條與顏色',''],['pline','生圖（遊戲線條風）：像遊戲裡的彩色線條圖',''],['pfmt','格式：直接輸出題庫格式','']])+'</div>';
 $('#palslot').replaceWith($('#pal'));
 document.addEventListener('click',e=>{document.querySelectorAll('.dd[open]').forEach(d=>{if(!d.contains(e.target)||e.target.closest('.ddm button'))d.open=false})});
 function histUI(){const u=$('#acts [data-a=undo]'),r=$('#acts [data-a=redo]');if(u)u.disabled=!hist.length;if(r)r.disabled=!redo.length}
@@ -439,7 +438,7 @@ icv.addEventListener('pointermove',e=>{if(!IM||IM.step!=1||!IM.dr)return;const[p
  const a=cl(0,IM.sw,Math.min(x0,x1)),b=cl(0,IM.sw,Math.max(x0,x1)),c=cl(0,IM.sh,Math.min(y0,y1)),f=cl(0,IM.sh,Math.max(y0,y1));if(b-a<8||f-c<8)return;IM.crop={x:a,y:c,w:b-a,h:f-c};imDraw()});
 icv.addEventListener('pointerup',()=>{if(IM)IM.dr=null});
 $('#ifull').onclick=()=>{IM.crop={x:0,y:0,w:IM.sw,h:IM.sh};imDraw()};
-function imGray(){const c=IM.crop,s=Math.min(1,PMAX/Math.max(c.w,c.h)),pw=Math.max(8,Math.round(c.w*s)),ph=Math.max(8,Math.round(c.h*s)),c2=document.createElement('canvas');c2.width=pw;c2.height=ph;const x=c2.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,pw,ph);x.drawImage(IM.img,c.x,c.y,c.w,c.h,0,0,pw,ph);const d=x.getImageData(0,0,pw,ph).data,g=new Float32Array(pw*ph);for(let i=0;i<pw*ph;i++)g[i]=.299*d[i*4]+.587*d[i*4+1]+.114*d[i*4+2];IM.g=g;IM.pw=pw;IM.ph=ph;IM.px=d;
+function imGray(pm){pm=pm||PMAX;IM.pm=pm;const c=IM.crop,s=Math.min(1,pm/Math.max(c.w,c.h)),pw=Math.max(8,Math.round(c.w*s)),ph=Math.max(8,Math.round(c.h*s)),c2=document.createElement('canvas');c2.width=pw;c2.height=ph;const x=c2.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,pw,ph);x.drawImage(IM.img,c.x,c.y,c.w,c.h,0,0,pw,ph);const d=x.getImageData(0,0,pw,ph).data,g=new Float32Array(pw*ph);for(let i=0;i<pw*ph;i++)g[i]=.299*d[i*4]+.587*d[i*4+1]+.114*d[i*4+2];IM.g=g;IM.pw=pw;IM.ph=ph;IM.px=d;
  const bs=Math.min(1,700/Math.max(c.w,c.h)),big=document.createElement('canvas');big.width=Math.max(8,Math.round(c.w*bs));big.height=Math.max(8,Math.round(c.h*bs));const bx=big.getContext('2d');bx.fillStyle='#fff';bx.fillRect(0,0,big.width,big.height);bx.drawImage(IM.img,c.x,c.y,c.w,c.h,0,0,big.width,big.height);IM.cc=big}
 function imBlur(g,w,h,n){let a=g;for(let k=0;k<n;k++){const b=new Float32Array(g.length),c=new Float32Array(g.length);for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=y*w+x;b[i]=(a[y*w+Math.max(0,x-1)]+a[i]+a[y*w+Math.min(w-1,x+1)])/3}for(let y=0;y<h;y++)for(let x=0;x<w;x++)c[y*w+x]=(b[Math.max(0,y-1)*w+x]+b[y*w+x]+b[Math.min(h-1,y+1)*w+x])/3;a=c}return a}
 function imEdge(g,w,h,sens){const mag=new Float32Array(w*h),dir=new Uint8Array(w*h);let mx=0;
@@ -457,7 +456,7 @@ function imTrace(E,w,h){const vis=new Uint8Array(w*h),N8=[[1,0],[0,1],[-1,0],[0,
  const st1=[],st2=[];for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(E[y*w+x])(deg(x,y)==1?st1:st2).push([x,y]);
  [...st1,...st2].forEach(([sx,sy])=>{if(vis[sy*w+sx])return;vis[sy*w+sx]=1;const A=walk(sx,sy),B=walk(sx,sy),p=[...B.reverse(),[sx,sy],...A];if(p.length<2)return;const f=p[0],l=p[p.length-1];out.push({p,closed:p.length>=8&&Math.hypot(f[0]-l[0],f[1]-l[1])<=1.5})});return out}
 let imT=0;function imSched(){clearTimeout(imT);imT=setTimeout(imRun,70)}
-function imRun(){if(!IM||IM.step!=2)return;if($('#icol').checked){imRunColor();return}const mode=$('#imode').value,sens=+$('#ithr').value,bl=+$('#iblur').value,tol=+$('#isimp').value/10,minL=+$('#imin').value,mxs=+$('#imax').value,w=IM.pw,h=IM.ph,g=imBlur(IM.g,w,h,bl),E=mode=='edge'?imThin(imEdge(g,w,h,sens),w,h):imSil(g,w,h,sens,$('#iinv').checked);
+function imRun(){if(!IM||IM.step!=2)return;const need=!$('#icol').checked&&$('#imode').value=='line'?700:PMAX;if(IM.pm!==need){imGray(need);imLayout()}if($('#icol').checked){imRunColor();return}if($('#imode').value=='line'){imRunLine();return}const mode=$('#imode').value,sens=+$('#ithr').value,bl=+$('#iblur').value,tol=+$('#isimp').value/10,minL=+$('#imin').value,mxs=+$('#imax').value,w=IM.pw,h=IM.ph,g=imBlur(IM.g,w,h,bl),E=mode=='edge'?imThin(imEdge(g,w,h,sens),w,h):imSil(g,w,h,sens,$('#iinv').checked);
  const len=p=>{let s=0;for(let i=1;i<p.length;i++)s+=Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]);return s};
  const R=imTrace(E,w,h).map(c=>({raw:c.p,closed:c.closed,len:len(c.p)})).filter(c=>c.len>=minL).sort((a,b)=>b.len-a.len).slice(0,mxs).map(c=>{let p=c.closed?rdp([...c.raw,c.raw[0]],tol):rdp(c.raw,tol);if(c.closed&&p.length>2)p.pop();return{p,raw:c.raw,closed:c.closed&&p.length>=3}}).filter(c=>c.p.length>=2);
  IM.res=R;imDraw();$('#ist').textContent=R.length+' 筆線條・'+R.reduce((s,r)=>s+r.p.length,0)+' 點'+(R.length?'':'（沒偵測到，請調高靈敏度）')}
@@ -538,15 +537,24 @@ HINT.cut='拖曳畫一條分割線，鬆手後線消失，被劃到的線條在�
 
 const PG_GEN=`
 
-（以上是我想畫的主題）請依下面規則生成一張圖片。這張圖之後會被程式轉成線條與顏色，所以請嚴格遵守：
+（以上是我想畫的主題）請依下面規則生成一張圖片。這張圖之後會被程式轉成線條與顏色，所以請遵守：
 1. 比例 1:1 正方形；畫面只有一個主體，完整放在正中央，四周留約 8% 空白，不可被裁切。
 2. 背景必須是純白色 #FFFFFF，單一平塗；不要漸層、地面、陰影、倒影、光暈、紋理、雜訊、邊框。
 3. 主體全部用「平塗色塊」：每個色塊內部是單一顏色；不要漸層、光影、高光、材質紋理、模糊。
-4. 顏色只能從這份色票挑選，並使用完全相同的色碼：紅 #FF3B4E、橙 #FF9A2E、黃 #FFE83D、綠 #47FF8A、藍 #3D8BFF、靛 #6A5CFF、紫 #C04DFF、灰 #9AA0B4、咖啡 #B5763F、米 #F2E0B8。能用單一顏色表達就只用一種（例如香蕉用黃、樹葉用綠），真的需要區分部位時才增加顏色，最多 4 種。
+4. 顏色請使用下面色票的色碼（色碼要完全相同），數量不限、依各部位自然上色：紅 #FF3B4E、橙 #FF9A2E、黃 #FFE83D、綠 #47FF8A、藍 #3D8BFF、靛 #6A5CFF、紫 #C04DFF、灰 #9AA0B4、咖啡 #B5763F、米 #F2E0B8、青 #19F3FF、粉 #FF3DF0。物體上要用到白色時請改用米色 #F2E0B8（因為背景是白色）。
 5. 不要黑色或深色描邊，用色塊本身的邊緣表現形狀；相鄰的色塊必須用差異明顯的不同顏色。
-6. 造型簡化成大色塊與清楚的輪廓：不要細碎的小點、不要細線（最細的部分至少要有畫面寬度的 3%）、不要文字、數字、浮水印、簽名。
+6. 細節可以多，但每個色塊與每條線都要清楚、邊緣乾淨銳利；不要文字、數字、浮水印、簽名。
 7. 用正面或側面的 2D 平面插畫風，不要透視、不要 3D、不要寫實照片質感。
-8. 輪廓乾淨銳利，邊緣不要毛邊。
+請直接輸出圖片，不要附加說明。`;
+const PG_LINE=`
+
+（以上是我想畫的主題）請生成一張「像傅立葉猜圖遊戲裡畫出來的線條圖」，這張圖之後會被程式偵測每條線和它的顏色，所以請遵守：
+1. 比例 1:1 正方形；單一主體置中，四周留約 8% 空白，不可被裁切。
+2. 背景是純深色 #0B0B1E，單一平塗；不要漸層、星點、網格、紋理、雜訊、邊框、陰影、倒影。
+3. 全部只用「線條」畫成，不要填滿色塊：用連續的亮色線條描出整體外形和內部的特徵，每條線的粗細都一樣（約畫面寬度的 0.8%–1.2%），線條端點是圓頭，像遊戲裡的霓虹細線，只有非常小範圍的柔和發光。
+4. 每條線使用一種純色，色碼要完全相同；顏色數量不限，依部位自然上色：紅 #FF3B4E、橙 #FF9A2E、黃 #FFE83D、綠 #47FF8A、藍 #3D8BFF、靛 #6A5CFF、紫 #C04DFF、灰 #9AA0B4、咖啡 #B5763F、米 #F2E0B8、青 #19F3FF、粉 #FF3DF0、白 #FFFFFF。
+5. 線條要乾淨平滑、不要抖動毛邊、不要虛線、不要重描同一條線兩次；線與線交叉或相接的地方要看得清楚。
+6. 用平面 2D 線稿風，不要透視、不要 3D、不要寫實質感、不要陰影；不要文字、數字、浮水印、簽名。
 請直接輸出圖片，不要附加說明。`;
 const PG_FMT=`
 
@@ -556,15 +564,14 @@ const PG_FMT=`
 欄位規則：
 - n：名稱（12 字以內）；al：別名陣列，沒有就 []；lv：難度 0–3（0 最容易、3 最難，依造型複雜度判斷）；c：類別（例如 動物、水果、物品）。
 - s：筆畫陣列，每一筆是一串 [x,y] 點。座標範圍 0–100，原點在左上角，y 向下；整張圖置中，四周留 5–10 的空白（有效範圍約 5–95）。
-- k：每一筆的顏色索引，長度必須等於 s 的筆數。索引：0 紅 #FF3B4E、1 橙 #FF9A2E、2 黃 #FFE83D、3 綠 #47FF8A、4 藍 #3D8BFF、5 靛 #6A5CFF、6 紫 #C04DFF、7 灰 #9AA0B4、8 咖啡 #B5763F、9 米 #F2E0B8、10 白 #FFFFFF、11 青 #19F3FF、12 粉 #FF3DF0。
-- 配色：用直觀的單一顏色（例如香蕉用 2、樹葉用 3）；需要區分部位時才用第二、第三種顏色，最多 3 種。
+- k：每一筆的顏色索引，長度必須等於 s 的筆數。索引：0 紅 #FF3B4E、1 橙 #FF9A2E、2 黃 #FFE83D、3 綠 #47FF8A、4 藍 #3D8BFF、5 靛 #6A5CFF、6 紫 #C04DFF、7 灰 #9AA0B4、8 咖啡 #B5763F、9 米 #F2E0B8、10 白 #FFFFFF、11 青 #19F3FF、12 粉 #FF3DF0。顏色數量不限，依各部位自然上色。
 
-畫法規則（很重要）：
-- 用輪廓線描出整體外形；每一筆是平滑連續的曲線，點要夠密（圓弧大約每 5–10° 一個點，直線只要端點），不要用橢圓、矩形硬拼。封閉的輪廓，最後一點要等於第一點。
-- 筆畫數 1–12 筆，所有點加起來約 40–400 個；先畫外輪廓，再畫內部重要特徵（例如眼睛、葉脈）；每個特徵盡量一筆畫完、不要重複描線；筆與筆的起訖點相近時請讓它們相連。
+畫法：
+- 用線條描出外形與內部特徵，想畫多精細都可以：筆畫數沒有限制，所有點加起來也沒有上限（需要的話可以到數千點、上萬點）。
+- 每一筆盡量是平滑連續的曲線，點要夠密（圓弧大約每 5° 一個點，直線只要端點），不要用橢圓、矩形硬拼。
 - 數字最多 1 位小數，不要科學記號。
 
-輸出前請自行檢查：JSON 合法、k 與 s 長度相同、每個點都是 [x,y]、所有座標都在 0–100 內，並且輪廓看起來確實是我要的主題。
+輸出前請自行檢查：JSON 合法、k 與 s 長度相同、每個點都是 [x,y]、所有座標都在 0–100 內，並且畫出來確實是我要的主題。
 範例（只是格式示範，不要照抄）：{"n":"範例","al":[],"lv":0,"c":"物品","k":[2],"s":[[[20,50],[50,20],[80,50],[50,80],[20,50]]]}`;
 function copyTxt(t,msg){const ok=()=>{$('#dst').textContent=msg},fb=()=>{const ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;left:-999px;top:0';document.body.append(ta);ta.select();try{document.execCommand('copy')?ok():$('#dst').textContent='複製失敗，請改用其他瀏覽器'}catch(e){$('#dst').textContent='複製失敗'}ta.remove()};try{navigator.clipboard.writeText(t).then(ok,fb)}catch(e){fb()}}
 
@@ -627,9 +634,10 @@ const AITOOLS=[
 ['clear_all','清空整個畫布（若畫布上有不是你這一輪畫的內容，屬於危險操作）。',{}],
 ['load_from_library','從圖庫載入一張既有的圖到畫布（會取代目前畫布，屬於危險操作）。',{name:S_},['name']],
 ['import_json','把一行題庫格式 JSON 載入畫布（會取代目前畫布，屬於危險操作）。',{line:S_},['line']],
+['replace_color','把畫布上所有某個顏色換成另一個顏色。',{from:S_,to:S_},['from','to']],
 ['undo','復原上一步。',{}]
 ].map(([name,description,props,req])=>({name,description,schema:{type:'object',properties:props,required:req||[]}}));
-const AIMUT=new Set(['add_shapes','update_shape','delete_shapes','move_shapes','scale_shapes','rotate_shapes','flip_shapes','set_color','convert_shape','cut_with_line','mirror_copy','set_meta','set_group','select_shapes','clear_all','load_from_library','import_json','undo']);
+const AIMUT=new Set(['add_shapes','update_shape','delete_shapes','move_shapes','scale_shapes','rotate_shapes','flip_shapes','set_color','convert_shape','cut_with_line','mirror_copy','set_meta','set_group','select_shapes','clear_all','load_from_library','import_json','undo','replace_color']);
 const aiNum=v=>typeof v=='number'&&isFinite(v);
 function aiPts(a,min){if(!Array.isArray(a)||a.length<min||a.some(q=>!Array.isArray(q)||q.length<2||!aiNum(+q[0])||!aiNum(+q[1])))throw new Error('points 必須是至少 '+min+' 個 [x,y]');return a.map(q=>[Math.round(+q[0]*10)/10,Math.round(+q[1]*10)/10])}
 function aiColor(c){if(c==null||c==='')return col;if(typeof c=='number')return PAL.includes(c)?c:col;const s=String(c).trim();if(/^\d+$/.test(s)&&PAL.includes(+s))return +s;const i=COLN.indexOf(s);if(i>=0)return i;const al={'黑':7,'棕':8,'褐':8,'橘':1,'青':11,'粉':12,'洋紅':12,'金':2};if(al[s]!=null)return al[s];throw new Error('不認得的顏色：'+s+'（可用：'+COLN.join('、')+'）')}
@@ -666,6 +674,7 @@ async function aiExec(n,a){a=a||{};let msg='完成';
  else if(n=='clear_all'){push();shapes=[];setMS([],-1)}
  else if(n=='load_from_library'){const o=galEntries().find(x=>String(x.n)===a.name||(x.al||[]).includes(a.name));if(!o)throw new Error('圖庫裡找不到「'+a.name+'」（圖庫分頁需要先載入內容）');galLoad(o);msg='已載入「'+o.n+'」，共 '+shapes.length+' 筆'}
  else if(n=='import_json'){let o;try{o=JSON.parse(String(a.line).trim().replace(/,$/,''))}catch(e){throw new Error('不是合法的 JSON')}const m=chk(o);if(m)throw new Error(m);applyObj(o);SRC=null;msg='已載入，共 '+shapes.length+' 筆'}
+ else if(n=='replace_color'){const f=aiColor(a.from),t=aiColor(a.to);push();let k=0;shapes.forEach(s=>{if(!s.hid&&CN(s.c)===CN(f)){s.c=t;k++}});msg='已把 '+k+' 筆的「'+COLN[f]+'」換成「'+COLN[t]+'」'}
  else if(n=='undo'){undo()}
  else throw new Error('沒有這個工具：'+n);
  draw();out();await new Promise(r=>setTimeout(r,140));return{text:msg}}
@@ -673,10 +682,20 @@ async function aiCall(n,a){const d=aiDanger(n,a||{});if(d&&$('#aiperm').value=='
 /* providers */
 function gemSchema(s){if(!s||typeof s!='object')return s;const o={type:String(s.type||'string').toUpperCase()};if(s.description)o.description=s.description;if(s.enum)o.enum=s.enum;if(s.items)o.items=gemSchema(s.items);if(s.properties){o.properties={};Object.keys(s.properties).forEach(k=>o.properties[k]=gemSchema(s.properties[k]))}if(s.required&&s.required.length)o.required=s.required;return o}
 async function aiJson(r){const t=await r.text();let j;try{j=JSON.parse(t)}catch(e){throw new Error('HTTP '+r.status+'：'+t.slice(0,200))}if(!r.ok)throw new Error('HTTP '+r.status+'：'+String((j.error&&(j.error.message||JSON.stringify(j.error)))||t).slice(0,300));return j}
-async function aiFetch(pv,sig){const key=$('#aikey').value.trim(),md=$('#aimd').value.trim();if(!key)throw new Error('請先按 ⚙ 填入 API 金鑰');if(!md)throw new Error('請先按 ⚙ 填入模型名稱');
+const AISERV={anthropic:{fmt:'anthropic'},openai:{fmt:'openai',url:'https://api.openai.com/v1'},gemini:{fmt:'gemini'},openrouter:{fmt:'openai',url:'https://openrouter.ai/api/v1'},deepseek:{fmt:'openai',url:'https://api.deepseek.com/v1'},groq:{fmt:'openai',url:'https://api.groq.com/openai/v1'},together:{fmt:'openai',url:'https://api.together.xyz/v1'},ollama:{fmt:'openai',url:'http://localhost:11434/v1',nokey:1},lmstudio:{fmt:'openai',url:'http://localhost:1234/v1',nokey:1}};
+const AIFALL={anthropic:['claude-sonnet-5-5','claude-opus-5-5','claude-haiku-5-5']};
+const aiSv=()=>AISERV[$('#aipv').value]||AISERV.anthropic;
+async function aiFetch(pv,sig){const sv=aiSv(),key=$('#aikey').value.trim(),md=$('#aimd').value;if(!key&&!sv.nokey)throw new Error('請先按 ⚙ 填入 API 金鑰');if(!md)throw new Error('請先按 ⚙ 選擇模型（填好金鑰後會自動載入清單，也可以按 ↻）');
  if(pv=='anthropic')return aiJson(await fetch('https://api.anthropic.com/v1/messages',{method:'POST',signal:sig,headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:md,max_tokens:4096,system:AISYS,tools:AITOOLS.map(t=>({name:t.name,description:t.description,input_schema:t.schema})),messages:AIH})}));
- if(pv=='openai'){const base=$('#aiurl').value.trim().replace(/\/+$/,'');return aiJson(await fetch(base+'/chat/completions',{method:'POST',signal:sig,headers:{'content-type':'application/json',authorization:'Bearer '+key},body:JSON.stringify({model:md,messages:[{role:'system',content:AISYS},...AIH],tools:AITOOLS.map(t=>({type:'function',function:{name:t.name,description:t.description,parameters:t.schema}})),tool_choice:'auto'})}))}
+ if(pv=='openai'){const h={'content-type':'application/json'};if(key)h.authorization='Bearer '+key;return aiJson(await fetch(sv.url+'/chat/completions',{method:'POST',signal:sig,headers:h,body:JSON.stringify({model:md,messages:[{role:'system',content:AISYS},...AIH],tools:AITOOLS.map(t=>({type:'function',function:{name:t.name,description:t.description,parameters:t.schema}})),tool_choice:'auto'})}))}
  return aiJson(await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(md)+':generateContent',{method:'POST',signal:sig,headers:{'content-type':'application/json','x-goog-api-key':key},body:JSON.stringify({systemInstruction:{parts:[{text:AISYS}]},contents:AIH,tools:[{functionDeclarations:AITOOLS.map(t=>{const d={name:t.name,description:t.description};if(Object.keys(t.schema.properties).length)d.parameters=gemSchema(t.schema);return d})}]})}))}
+async function aiModels(){const sv=aiSv(),key=$('#aikey').value.trim(),sel=$('#aimd'),keep=AIMD[$('#aipv').value]||'';let ids=[],note='';
+ try{if(!key&&!sv.nokey)throw new Error('尚未填金鑰');let j;if(sv.fmt=='anthropic'){j=await aiJson(await fetch('https://api.anthropic.com/v1/models?limit=100',{headers:{'x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}}));ids=(j.data||[]).map(m=>m.id)}
+  else if(sv.fmt=='openai'){const h={};if(key)h.authorization='Bearer '+key;j=await aiJson(await fetch(sv.url+'/models',{headers:h}));ids=(j.data||j.models||[]).map(m=>m.id||m.name).filter(Boolean).filter(x=>!/embed|whisper|tts|dall-e|moderation|audio|image|rerank|guard/i.test(x))}
+  else{j=await aiJson(await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200',{headers:{'x-goog-api-key':key}}));ids=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')).map(m=>String(m.name).replace(/^models\//,''))}
+  ids=[...new Set(ids)].sort();if(!ids.length)throw new Error('清單是空的')}catch(e){ids=AIFALL[$('#aipv').value]||[];note='（無法載入清單：'+String(e.message).slice(0,60)+'）'}
+ sel.innerHTML=(ids.length?ids:[]).map(m=>'<option value="'+esc(m)+'">'+esc(m)+'</option>').join('')+'<option value="__man__">＋手動輸入模型名稱…</option>';if(keep&&ids.includes(keep))sel.value=keep;else if(keep&&keep!='__man__'){const o=document.createElement('option');o.value=keep;o.textContent=keep;sel.insertBefore(o,sel.firstChild);sel.value=keep}else if(ids.length)sel.value=ids[0];
+ if(!note)AIMD[$('#aipv').value]=sel.value;$('#aist').textContent=note;aiCfgSave()}
 function aiParse(pv,j){if(pv=='anthropic'){const c=j.content||[];return{hist:{role:'assistant',content:c},text:c.filter(b=>b.type=='text').map(b=>b.text).join('\n'),calls:c.filter(b=>b.type=='tool_use').map(b=>({id:b.id,name:b.name,args:b.input||{}}))}}
  if(pv=='openai'){const m=(j.choices&&j.choices[0]&&j.choices[0].message)||{},tc=m.tool_calls||[];return{hist:Object.assign({role:'assistant',content:m.content||null},tc.length?{tool_calls:tc}:{}),text:typeof m.content=='string'?m.content:'',calls:tc.map(c=>{let a={};try{a=JSON.parse(c.function.arguments||'{}')}catch(e){}return{id:c.id,name:c.function.name,args:a}})}}
  const parts=(j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts)||[];return{hist:{role:'model',parts},text:parts.filter(p=>p.text&&!p.thought).map(p=>p.text).join('\n'),calls:parts.filter(p=>p.functionCall).map((p,i)=>({id:'g'+i,name:p.functionCall.name,args:p.functionCall.args||{}}))}}
@@ -689,7 +708,7 @@ function aiStrip(o){if(Array.isArray(o)){o.forEach((v,i)=>{if(v&&typeof v=='obje
 function aiLog(c,t){const d=document.createElement('div');d.className='aim '+c;d.textContent=t;$('#ailog').append(d);$('#ailog').scrollTop=1e9;return d}
 function aiUI(){$('#aisend').hidden=AIBUSY;$('#aistop').hidden=!AIBUSY;$('#aiin').disabled=AIBUSY;$('#aist').textContent=AIBUSY?'AI 工作中…':''}
 function aiDesc(c){let s=c.name;try{const j=JSON.stringify(c.args||{});s+=' '+(j.length>90?j.slice(0,90)+'…':j)}catch(e){}return s}
-async function aiSend(){if(AIBUSY)return;const txt=$('#aiin').value.trim();if(!txt)return;aiCfgSave();const pv=$('#aipv').value;$('#aiin').value='';AIT++;aiStrip(AIH);AIH0=hist.length;aiLog('u',txt);
+async function aiSend(){if(AIBUSY)return;const txt=$('#aiin').value.trim();if(!txt)return;aiCfgSave();const pv=aiSv().fmt;$('#aiin').value='';AIT++;aiStrip(AIH);AIH0=hist.length;aiLog('u',txt);
  AIH.push(pv=='gemini'?{role:'user',parts:[{text:txt}]}:{role:'user',content:txt});AIBUSY=true;aiUI();AIABORT=new AbortController();const sig=AIABORT.signal;let wait=null;
  try{for(let step=0;step<30;step++){wait=aiLog('t','…思考中');const j=await aiFetch(pv,sig);wait.remove();wait=null;const p=aiParse(pv,j);AIH.push(p.hist);if(p.text)aiLog('a',p.text);if(!p.calls.length)break;
    const res=[];for(const c of p.calls){if(sig.aborted)throw new Error('已停止');aiLog('t','🔧 '+aiDesc(c));let r;try{r=await aiCall(c.name,c.args)}catch(e){r={text:'錯誤：'+e.message,err:true}}if(r.err)aiLog('e',r.text);res.push(r)}
@@ -697,15 +716,40 @@ async function aiSend(){if(AIBUSY)return;const txt=$('#aiin').value.trim();if(!t
  catch(e){if(wait)wait.remove();aiLog('e',e.name=='AbortError'?'已停止':'⚠ '+e.message)}
  AIBUSY=false;aiUI();draw();out()}
 function aiToggle(){const a=$('#aid');a.hidden=!a.hidden;if(!a.hidden){if(!AIOK){AIOK=1;aiCfgLoad();if(!$('#aikey').value)$('#aicfg').hidden=false}$('#aiin').focus()}}
-function aiPv(){const pv=$('#aipv').value;$('#aiurlw').hidden=pv!='openai';$('#aikey').value=AIKEYS[pv]||'';$('#aimd').value=AIMD[pv]||'';$('#aimdl').innerHTML=(AIMODELS[pv]||[]).map(m=>'<option value="'+m+'">').join('');$('#aimd').placeholder=pv=='anthropic'?'例如 claude-sonnet-5-5':pv=='gemini'?'請填 Gemini 模型名稱':'請填模型名稱（需支援工具呼叫）'}
-function aiCfgSave(){const pv=$('#aipv').value;AIKEYS[pv]=$('#aikey').value;AIMD[pv]=$('#aimd').value;const c={pv,url:$('#aiurl').value,md:AIMD,perm:$('#aiperm').value,vis:$('#aivis').checked,rem:$('#airem').checked};if(c.rem)c.keys=AIKEYS;try{localStorage.setItem(AIK,JSON.stringify(c))}catch(e){}}
-function aiCfgLoad(){try{const c=JSON.parse(localStorage.getItem(AIK)||'{}');if(c.pv)$('#aipv').value=c.pv;if(c.url)$('#aiurl').value=c.url;AIMD=c.md||{};$('#aiperm').value=c.perm||'confirm';$('#aivis').checked=c.vis!==false;$('#airem').checked=!!c.rem;if(c.rem&&c.keys)AIKEYS=c.keys}catch(e){}aiPv()}
+function aiPv(){const pv=$('#aipv').value;$('#aikey').value=AIKEYS[pv]||'';$('#aikey').disabled=!!aiSv().nokey;$('#aikey').placeholder=aiSv().nokey?'（本機服務不需要金鑰）':'貼上你的 API 金鑰';aiModels()}
+function aiCfgSave(){const pv=$('#aipv').value;AIKEYS[pv]=$('#aikey').value;if($('#aimd').value&&$('#aimd').value!='__man__')AIMD[pv]=$('#aimd').value;const c={pv,md:AIMD,perm:$('#aiperm').value,vis:$('#aivis').checked,rem:$('#airem').checked};if(c.rem)c.keys=AIKEYS;try{localStorage.setItem(AIK,JSON.stringify(c))}catch(e){}}
+function aiCfgLoad(){try{const c=JSON.parse(localStorage.getItem(AIK)||'{}');if(c.pv&&AISERV[c.pv])$('#aipv').value=c.pv;AIMD=(c.md&&typeof c.md=='object')?c.md:{};$('#aiperm').value=c.perm||'confirm';$('#aivis').checked=c.vis!==false;$('#airem').checked=!!c.rem;if(c.rem&&c.keys)AIKEYS=c.keys}catch(e){}aiPv()}
 $('#aipv').onchange=()=>{aiPv()};$('#aiset').onclick=()=>{$('#aicfg').hidden=!$('#aicfg').hidden};$('#aix').onclick=()=>{$('#aid').hidden=true};
 $('#aisend').onclick=aiSend;$('#aistop').onclick=()=>{if(AIABORT)AIABORT.abort()};
 $('#aiin').addEventListener('keydown',e=>{if(e.key=='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();aiSend()}});
 $('#aiclr').onclick=()=>{if(AIBUSY)return;AIH=[];$('#ailog').innerHTML='';aiLog('t','已開始新對話')};
 $('#aiundo').onclick=()=>{if(AIBUSY)return;let n=0;while(hist.length>AIH0){undo();n++}aiLog('t',n?'已撤銷這一輪的 '+n+' 步操作':'這一輪沒有可撤銷的操作')};
-['#aiperm','#aivis','#airem','#aimd','#aikey','#aiurl'].forEach(s=>$(s).addEventListener('change',aiCfgSave));
+['#aiperm','#aivis','#airem'].forEach(s=>$(s).addEventListener('change',aiCfgSave));
+$('#aimd').addEventListener('change',()=>{if($('#aimd').value=='__man__'){const v=(prompt('輸入模型名稱（請查服務商文件）')||'').trim();if(v){const o=document.createElement('option');o.value=v;o.textContent=v;$('#aimd').insertBefore(o,$('#aimd').firstChild);$('#aimd').value=v}else $('#aimd').value=AIMD[$('#aipv').value]||''}aiCfgSave()});
+$('#aikey').addEventListener('change',()=>{aiCfgSave();aiModels()});$('#aimdr').onclick=()=>aiModels();
+
+function rcFill(){const cnt={};shapes.forEach(s=>{if(s.hid)return;const k=CN(s.c);cnt[k]=(cnt[k]||0)+1});const ks=Object.keys(cnt).map(Number).sort((a,b)=>a-b);$('#rcf').innerHTML=ks.length?ks.map(k=>'<option value="'+k+'">'+COLN[k]+'（'+cnt[k]+' 筆）</option>').join(''):'<option value="">（畫布上沒有圖形）</option>';const to=$('#rct');const cur=to.value;to.innerHTML=PAL.map(i=>'<option value="'+i+'">'+COLN[i]+'</option>').join('');to.value=cur||String(col)}
+$('#rcdd').addEventListener('toggle',()=>{if($('#rcdd').open)rcFill()});
+$('#rcb').onclick=()=>{const f=$('#rcf').value,t=+$('#rct').value;if(f===''){$('#dst').textContent='畫布上沒有可換色的圖形';return}const from=+f,only=$('#rcs').checked?SEL():null;let n=0;push();shapes.forEach((s,i)=>{if(s.hid||CN(s.c)!==from)return;if(only&&!only.includes(i))return;s.c=t;n++});if(!n){hist.pop();$('#dst').textContent='沒有符合的筆畫';return}draw();out();$('#dst').textContent='已把 '+n+' 筆的「'+COLN[from]+'」換成「'+COLN[t]+'」'};
+
+function imRuns(P,col,closed,minL){const n=P.length,dl=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);let runs=[],s0=0;for(let i=1;i<=n;i++){if(i==n||col[i]!=col[i-1]){runs.push({s:s0,e:i-1,c:col[i-1]});s0=i}}
+ if(closed&&runs.length>1&&runs[0].c==runs[runs.length-1].c){const l=runs.pop();runs[0]={s:l.s,e:runs[0].e,c:runs[0].c,wrap:true}}
+ const rl=r=>{let s=0;if(r.wrap){for(let i=r.s+1;i<n;i++)s+=dl(P[i],P[i-1]);for(let i=1;i<=r.e;i++)s+=dl(P[i],P[i-1])}else for(let i=r.s+1;i<=r.e;i++)s+=dl(P[i],P[i-1]);return s};
+ const cyc=closed;for(let guard=0;guard<400&&runs.length>1;guard++){let wi=-1,wl=1e18;runs.forEach((r,i)=>{const l=rl(r);if(l<minL&&l<wl){wl=l;wi=i}});if(wi<0)break;const m=runs.length,pi=cyc?(wi+m-1)%m:wi-1,ni=cyc?(wi+1)%m:wi+1,pl=pi>=0&&pi!=wi?rl(runs[pi]):-1,nl=ni<m&&ni!=wi?rl(runs[ni]):-1;if(pl<0&&nl<0)break;const tg=pl>=nl?pi:ni,c=runs[tg].c;runs[wi].c=c;
+  const f=[];runs.forEach(r=>{const l=f[f.length-1];if(l&&l.c==r.c&&!l.wrap&&!r.wrap){l.e=r.e}else f.push({...r})});if(cyc&&f.length>1&&f[0].c==f[f.length-1].c&&!f[0].wrap&&!f[f.length-1].wrap){const l=f.pop();f[0]={s:l.s,e:f[0].e,c:f[0].c,wrap:true}}runs=f}
+ if(runs.length==1)return[{raw:P,closed,c:runs[0].c}];
+ const out=[];runs.forEach((r,i)=>{const seg=r.wrap?[...P.slice(r.s),...P.slice(0,r.e+1)]:P.slice(r.s,r.e+1),nx=runs[(i+1)%runs.length];if(i<runs.length-1||closed)seg.push(P[nx.s]);out.push({raw:seg,closed:false,c:r.c})});return out}
+function imRunLine(){const w=IM.pw,h=IM.ph,px=IM.px,sens=+$('#ithr').value,tol=+$('#isimp').value/10*.6,minRun=+$('#icml').value,mn=+$('#imin').value,mxs=+$('#imax').value,bl=+$('#iblur').value;
+ const bins=new Map(),add=i=>{const k=(px[i*4]>>4)<<8|(px[i*4+1]>>4)<<4|(px[i*4+2]>>4);let e=bins.get(k);if(!e){e=[0,0,0,0];bins.set(k,e)}e[0]++;e[1]+=px[i*4];e[2]+=px[i*4+1];e[3]+=px[i*4+2]};
+ for(let x=0;x<w;x++){add(x);add((h-1)*w+x)}for(let y=0;y<h;y++){add(y*w);add(y*w+w-1)}let bb=null;bins.forEach(e=>{if(!bb||e[0]>bb[0])bb=e});const bg=[bb[1]/bb[0],bb[2]/bb[0],bb[3]/bb[0]];
+ const dif=new Float32Array(w*h);for(let i=0;i<w*h;i++){const dr=px[i*4]-bg[0],dg=px[i*4+1]-bg[1],db=px[i*4+2]-bg[2];dif[i]=Math.sqrt(2*dr*dr+4*dg*dg+3*db*db)/3}
+ const srt=Float32Array.from(dif).sort(),mx=srt[Math.floor(srt.length*.995)]||1,thr=mx*(.75-.65*sens/100);let M=new Uint8Array(w*h);for(let i=0;i<w*h;i++)M[i]=dif[i]>thr?1:0;for(let k=0;k<bl;k++)M=imMajor(M,w,h,2);
+ const E2=imThin(M,w,h),chs=imTrace(E2,w,h),pal=(x0,y0)=>{let bd=-1,best=0;for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){const X=x0+dx,Y=y0+dy;if(X<0||Y<0||X>=w||Y>=h)continue;const j=Y*w+X;if(dif[j]>bd){bd=dif[j];best=j}}return palIdx([px[best*4],px[best*4+1],px[best*4+2]])};
+ const plen=p=>{let s=0;for(let i=1;i<p.length;i++)s+=Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]);return s};let all=[];
+ chs.forEach(ch=>{const P=ch.p;if(P.length<2||plen(P)<mn)return;let col=P.map(q=>pal(q[0],q[1]));const sm=col.slice();for(let i=0;i<col.length;i++){const c={};for(let d=-3;d<=3;d++){const k=col[Math.min(col.length-1,Math.max(0,i+d))];c[k]=(c[k]||0)+1}let b=col[i],bc=0;for(const k in c)if(c[k]>bc){bc=c[k];b=+k}sm[i]=b}
+  imRuns(P,sm,ch.closed,minRun).forEach(s=>all.push({raw:s.raw,closed:s.closed,c:s.c,len:plen(s.raw)}))});
+ all.sort((a,b)=>b.len-a.len);all=all.slice(0,Math.max(mxs,1));const R=all.map(c=>{let p=c.closed?rdp([...c.raw,c.raw[0]],tol):rdp(c.raw,tol);if(c.closed&&p.length>2)p.pop();return{p,raw:c.raw,closed:c.closed&&p.length>=3,c:c.c}}).filter(c=>c.p.length>=2);
+ IM.res=R;imDraw();const used=new Set(R.map(r=>r.c)).size;$('#ist').textContent=R.length+' 筆線條・'+R.reduce((s,r)=>s+r.p.length,0)+' 點・'+used+' 種顏色'+(R.length?'':'（沒偵測到，請調高靈敏度）')}
 let MS=[],SLK='',SRC=null,MR=[],MRS=-1,GPV=null;
 HINT.mir='拖曳畫出鏡像線；拖端點改方向，拖線身移動；Del 刪除這條線。右側「鏡像」面板可輸入角度。';
 const uid=()=>Math.random().toString(36).slice(2,8),GC=['#19f3ff','#ff3df0','#47ff8a','#ffe83d','#ff9a2e','#c04dff'];
@@ -765,12 +809,13 @@ function renderList(){const el=$('#sl'),S0=SEL(),sig=shapes.map(s=>s.t+s.c+(s.hi
 $('#sl').onclick=e=>{const row=e.target.closest('.sli');if(!row)return;const i=+row.dataset.i,b=e.target.closest('button');
  if(b){const x=b.dataset.x;if(x=='hid'||x=='lk'){push();shapes[i][x]=!shapes[i][x]||undefined;draw();out();return}const j=i+(x=='ep'?-1:1);if(j>=0&&j<shapes.length){push();[shapes[i],shapes[j]]=[shapes[j],shapes[i]];setMS([j],j);draw();out()}return}
  const S0=SEL();if(e.shiftKey||e.ctrlKey||e.metaKey){const R=S0.includes(i)?S0.filter(v=>v!=i):[...S0,i];setMS(R,S0.includes(i)?(R.length?R[R.length-1]:-1):i)}else setMS([i],i);draw()};
-const HK=[['拖放／貼上圖片','把圖片拖進畫布或按 Ctrl+V 貼上，會開啟圖片匯入（可擷取範圍、轉成線條或當描圖底圖）'],['🤖 AI 助手','用你自己的 API 金鑰讓 AI 直接操作編輯器：畫圖、修改、移動、縮放、上色等；權限可選「全自動」或「危險操作需同意」'],['提示詞▾（生圖／格式）','複製給 AI 的提示詞：先打你想要的主題，再貼上；「生圖」讓 AI 產生適合轉線條的圖，「格式」讓 AI 直接輸出題庫格式的一行'],['K（分割線）','拖曳畫一條線，鬆手後線消失，被劃到的線條在交點處截斷成不同筆（有選取時只截斷選取的）；圓、橢圓、弧線會變成弧線'],['拖曳虛線框四角','縮放選取物件：以對角點為基準，按住 Alt 以中心為基準；拖曳時可直接打數字指定倍率。手機兩指都放在框內即縮放圖形'],['M（鏡像線）','拖曳畫出鏡像線；拖端點改方向，拖線身移動，Del 刪除；角度可在右側面板輸入'],['即時鏡像','開啟後畫的每一筆，會在每條鏡像線另一側產生連動的鏡像（🔗），可按「固定鏡像」變成一般筆畫'],['按住 X','暫時取消所有吸附（格線、端點、角度、正交），放開後恢復'],['轉換型態（右側面板）','選取後換成直線、折線、曲線、弧線、圓、橢圓，或封閉／開放'],['從圖庫載入（右側面板）','選圖庫中的圖來編輯，改完按「覆蓋原圖」寫回圖庫分頁'],['框選','選取工具在空白處拖曳：往右拖＝完全框住才選，往左拖＝碰到就選'],['Shift 或 Ctrl＋點圖形 / Ctrl+A','加選或取消／全選'],['畫線時輸入數字','輸入長度（圓為半徑），Enter 確認'],['. / ,','旋轉 +15° / −15°'],['雙指（手機）','縮放與平移畫面'],['V / F / L / P / A / C / E / S / I','選取／手繪／直線／折線／弧線／圓／橢圓／曲線／加點'],['Enter','完成折線或曲線'],['Esc','取消草稿；沒有草稿時取消選取'],['Shift（按住）','強制水平或垂直（正交）'],['F8','正交開關'],['F9','格線吸附開關'],['F3','端點吸附開關'],['滾輪','縮放（以游標為中心）'],['空白鍵＋拖曳 或 中鍵拖曳','平移畫面'],['Z','回到全圖'],['+ / -','放大／縮小'],['Ctrl+Z','復原'],['Ctrl+Y 或 Ctrl+Shift+Z','重做'],['Ctrl+C / Ctrl+V','複製／貼上選取的圖形'],['Ctrl+D','複製圖形'],['Del / Backspace','刪除選取的點或圖形'],['方向鍵（Shift 加大）','微調選取的圖形或點'],['H','左右翻轉'],['Shift+H','上下翻轉'],['R','反轉方向（影響起筆位置）'],['[ / ]','筆序提前／延後（第一筆是演示的起筆）'],['G','開始演示'],['演示中：空白鍵','暫停／繼續'],['演示中：← / →','倒退／快進'],['演示中：Esc','結束演示'],['F1 或 ?','開關這張表']];
+const HK=[['拖放／貼上圖片','把圖片拖進畫布或按 Ctrl+V 貼上，會開啟圖片匯入（可擷取範圍、轉成線條或當描圖底圖）'],['🤖 AI 助手','用你自己的 API 金鑰讓 AI 直接操作編輯器：畫圖、修改、移動、縮放、上色等；權限可選「全自動」或「危險操作需同意」'],['提示詞▾（生圖／格式）','複製給 AI 的提示詞：先打你想要的主題，再貼上；「生圖（色塊版）」「生圖（遊戲線條風）」讓 AI 產生適合匯入的圖，「格式」讓 AI 直接輸出題庫格式的一行'],['K（分割線）','拖曳畫一條線，鬆手後線消失，被劃到的線條在交點處截斷成不同筆（有選取時只截斷選取的）；圓、橢圓、弧線會變成弧線'],['拖曳虛線框四角','縮放選取物件：以對角點為基準，按住 Alt 以中心為基準；拖曳時可直接打數字指定倍率。手機兩指都放在框內即縮放圖形'],['M（鏡像線）','拖曳畫出鏡像線；拖端點改方向，拖線身移動，Del 刪除；角度可在右側面板輸入'],['即時鏡像','開啟後畫的每一筆，會在每條鏡像線另一側產生連動的鏡像（🔗），可按「固定鏡像」變成一般筆畫'],['按住 X','暫時取消所有吸附（格線、端點、角度、正交），放開後恢復'],['轉換型態（右側面板）','選取後換成直線、折線、曲線、弧線、圓、橢圓，或封閉／開放'],['從圖庫載入（右側面板）','選圖庫中的圖來編輯，改完按「覆蓋原圖」寫回圖庫分頁'],['框選','選取工具在空白處拖曳：往右拖＝完全框住才選，往左拖＝碰到就選'],['Shift 或 Ctrl＋點圖形 / Ctrl+A','加選或取消／全選'],['畫線時輸入數字','輸入長度（圓為半徑），Enter 確認'],['. / ,','旋轉 +15° / −15°'],['雙指（手機）','縮放與平移畫面'],['V / F / L / P / A / C / E / S / I','選取／手繪／直線／折線／弧線／圓／橢圓／曲線／加點'],['Enter','完成折線或曲線'],['Esc','取消草稿；沒有草稿時取消選取'],['Shift（按住）','強制水平或垂直（正交）'],['F8','正交開關'],['F9','格線吸附開關'],['F3','端點吸附開關'],['滾輪','縮放（以游標為中心）'],['空白鍵＋拖曳 或 中鍵拖曳','平移畫面'],['Z','回到全圖'],['+ / -','放大／縮小'],['Ctrl+Z','復原'],['Ctrl+Y 或 Ctrl+Shift+Z','重做'],['Ctrl+C / Ctrl+V','複製／貼上選取的圖形'],['Ctrl+D','複製圖形'],['Del / Backspace','刪除選取的點或圖形'],['方向鍵（Shift 加大）','微調選取的圖形或點'],['H','左右翻轉'],['Shift+H','上下翻轉'],['R','反轉方向（影響起筆位置）'],['[ / ]','筆序提前／延後（第一筆是演示的起筆）'],['G','開始演示'],['演示中：空白鍵','暫停／繼續'],['演示中：← / →','倒退／快進'],['演示中：Esc','結束演示'],['F1 或 ?','開關這張表']];
 function helpR(){const q=$('#hq').value.trim().toLowerCase();$('#hpl').innerHTML=HK.filter(([a,b])=>!q||(a+b).toLowerCase().includes(q)).map(([a,b])=>'<div><b>'+esc(a)+'</b><span>'+esc(b)+'</span></div>').join('')||'<small>找不到符合的項目</small>'}
 $('#hq').oninput=helpR;
 $('#rpb').onclick=()=>{document.body.classList.toggle('rpo');setTimeout(()=>{if(cur=='d')resizeC()},50)};
 $('#sg').onchange=()=>{if(SEL().length){push();const v=$('#sg').value===''?undefined:+$('#sg').value;SS().forEach(s=>s.g=v);out();SLK=''}};
 function ACT2(a){const sh=shapes[selI];
+ if(a=='pline'){copyTxt(PG_LINE,'已複製「生圖（遊戲線條風）」提示詞：先打你想要的主題，再貼上送給 AI；產生的圖用「匯入圖片」選「線條圖（偵測線條與顏色）」模式轉成線條');return 1}
  if(a=='pgen'){copyTxt(PG_GEN,'已複製「生圖」提示詞：先打你想要的主題，再貼上這段送給 AI，產生的圖就能用「匯入圖片」轉成線條');return 1}
  if(a=='pfmt'){copyTxt(PG_FMT,'已複製「格式」提示詞：先打你想要的主題，再貼上這段送給 AI，它會直接輸出一行題庫格式，貼到「匯入／輸出」載入即可');return 1}
  if(a=='ai'){aiToggle();return 1}
