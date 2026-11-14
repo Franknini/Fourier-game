@@ -53,6 +53,7 @@ html,body{overscroll-behavior:none}#pad,#cv,#stage{touch-action:none}html{height
 @media(max-width:899px){html:not(.ls) #game.lk:has(.gr) #side{display:flex;gap:8px;align-items:stretch}
 html:not(.ls) #game.lk:has(.gr) #ctl{flex:1 1 0;min-width:0;order:2}
 html:not(.ls) #game.lk:has(.gr) #log{order:1;flex:1 1 0;min-width:0;max-height:min(24dvh,200px);min-height:92px;border-top:0;border-right:1px solid #1c2048;padding:4px 6px 0 0;overflow:auto}}
+@media(max-width:899px){#lbf .row{flex-wrap:nowrap;gap:calc(8px*var(--u))}#lbf .row>button{flex:1 1 0;min-width:0;white-space:nowrap;padding-left:.25em;padding-right:.25em;font-size:min(1em,calc((100vw - 56px)/12.6))}}
 </style></head><body>
 <div id="toast"></div><div id="refp" hidden><div class="rbox"><div class="row"><b>目前題庫的類別與難度</b><button id="refx" class="g">關閉</button></div><div id="reft"></div></div></div><div id="hoff" hidden>房主離線中...</div><div id="dlg" hidden><div class="dbox"><div id="dlgt"></div><div class="row"><button id="dlgy">確認</button><button id="dlgn" class="g">取消</button></div></div></div><div id="lobby">
 <div id="lbh"><h1>傅立葉猜圖</h1>
@@ -71,7 +72,7 @@ html:not(.ls) #game.lk:has(.gr) #log{order:1;flex:1 1 0;min-width:0;max-height:m
 <div class="mb"><button class="mbtn on" data-m="bank">題庫出題<small>電腦自動畫，全部玩家一起猜</small></button><button class="mbtn" data-m="turn">輪流手繪<small>每個玩家輪流你畫我猜</small></button></div></div>
 <details class="cd" open><summary><b>基礎設置</b></summary>
 <div class="row">最高難度（星數）<input id="lv" type="number" min="0" max="3" value="3" style="width:56px"></div><small>0 顆星最容易，越大越難；目前最難是 3 顆星</small>
-<div class="row"><button class="tgb on" data-tg="cap">筆數上限</button><input id="cap" type="number" min="1" value="3" data-last="3" style="width:64px"><span id="capn" hidden>（無上限）</span></div><small>按一下開啟或關閉；每多 1 顆星，上限自動 +1（2 星題 +2）</small>
+<div id="caprow"><div class="row"><button class="tgb on" data-tg="cap">筆數上限</button><input id="cap" type="number" min="1" value="3" data-last="3" style="width:64px"><span id="capn" hidden>（無上限）</span></div><small>按一下開啟或關閉；每多 1 顆星，上限自動 +1（2 星題 +2）</small></div>
 <div id="dtrow" hidden><div class="row"><button class="tgb" data-tg="dt">繪圖計時</button><input id="dt" type="number" min="5" value="0" data-last="60" hidden style="width:64px"><span id="dtu" hidden>秒（0 星題）</span><span id="dtn">（無計時）</span></div><small>只在輪流手繪有效；每多 1 顆星時間 +50%，時間到自動開始演示</small></div>
 <div class="row"><label><input type="checkbox" id="hl"> 提示字數</label><label><input type="checkbox" id="hc"> 提示類別</label><label><input type="checkbox" id="hd"> 提示難度</label></div>
 <div class="row">傅立葉圓（開始時）<select id="dsp"><option value="all">顯示</option><option value="none" selected>不顯示</option></select></div></details>
@@ -90,7 +91,7 @@ const $=i=>document.getElementById(i),g=i=>HC&&i in HC?HC[i]:($(i).type=='checkb
 const TARGET=1.5;
 function fitText(){try{const b0=Math.min(innerWidth,Math.min(screen.width,screen.height)||innerWidth),u=innerWidth>=900?1:Math.max(.82,Math.min(1.1,b0/412));const f='100px monospace',cx=document.createElement('canvas').getContext('2d');cx.font=f;const w0=cx.measureText('0000000000').width,e=document.createElement('span');e.style.cssText='position:absolute;visibility:hidden;white-space:nowrap;font:'+f;e.textContent='0000000000';document.body.append(e);const z=e.getBoundingClientRect().width/w0;e.remove();const fs=Math.min(3,Math.max(.5,TARGET/z*u));document.documentElement.style.setProperty('--fs',fs);document.documentElement.style.setProperty('--u',u);}catch(err){}}
 fitText();addEventListener('load',fitText);addEventListener('resize',()=>{clearTimeout(window.__ft);window.__ft=setTimeout(fitText,150)});
-const COLS=['#ff3b4e','#ff9a2e','#ffe83d','#47ff8a','#3d8bff','#6a5cff','#c04dff','#9aa0b4','#b5763f','#f2e0b8','#ffffff','#19f3ff','#ff3df0','#ffe83d','#47ff8a','#ff8a3d'],N=1024,M=960,K=240;
+const COLS=['#ff3b4e','#ff9a2e','#ffe83d','#47ff8a','#3d8bff','#6a5cff','#c04dff','#9aa0b4','#b5763f','#f2e0b8','#ffffff','#19f3ff','#ff3df0','#ffe83d','#47ff8a','#ff8a3d'],N=4096,M=6000,K=240;
 const sh=(f,n=120)=>Array.from({length:n},(_,i)=>f(i/n*2*Math.PI));
 const ITEMS=[
 {n:'愛心',al:['心','紅心'],lv:0,s:()=>[sh(t=>[16*Math.sin(t)**3,-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))])]},
@@ -144,7 +145,7 @@ function sizes(cs,P,cap){const a=sortCs(cs),tot=a.reduce((s,c)=>s+c.a*c.a,0)||1,
  return out}
 function prep(st,mg){const pts=[];st.forEach(s=>s.p.forEach(q=>pts.push(q)));if(pts.length<3)return null;
  const xs=pts.map(q=>q[0]),ys=pts.map(q=>q[1]),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),sk=2/Math.max(x1-x0,y1-y0,1e-6),
- ns=st.map(s=>({p:s.p.map(q=>[(q[0]-(x0+x1)/2)*sk,(q[1]-(y0+y1)/2)*sk]),c:s.c})),Ps=[];
+ ns=st.map(s=>{let p=s.p.map(q=>[(q[0]-(x0+x1)/2)*sk,(q[1]-(y0+y1)/2)*sk]);if(p.length==1)p=[[p[0][0]-.015,p[0][1]],[p[0][0]+.015,p[0][1]]];return{p,c:s.c}}),Ps=[];
  grp(ns,mg).forEach(gr=>{const P=prepG(gr);if(P)Ps.push(P)});if(!Ps.length)return null;
  const tl=Ps.reduce((s,P)=>s+P.vl,0)||1,o={fl:[],cs:[],sz:[],og:[],gv:[]};
  Ps.forEach(P=>{const cap=Math.max(40,Math.min(240,Math.round(320*P.vl/tl))),cs=fitG(P,cap);o.fl.push(P.fl.map(x=>x.toString(36)).join(''));o.cs.push(cs);o.sz.push(sizes(cs,P,cap));o.gv.push(simpV(P.V.map(v=>({x:v.x,y:v.y,c:v.c}))));P.V.forEach(v=>o.og.push({x:v.x,y:v.y,c:v.c}))});
@@ -166,7 +167,7 @@ function chain(c,t){let x=0,y=0;const o=[[0,0]];for(const[k,re,im]of c){const a=
 function curve(c,fl){const o=[];for(let j=0;j<M;j++){const t=j/M;let x=0,y=0;for(const[k,re,im]of c){const a=2*Math.PI*k*t,co=Math.cos(a),si=Math.sin(a);x+=re*co-im*si;y+=re*si+im*co}o.push({x,y,c:parseInt(fl[Math.floor(j*N/M)],36)})}return o}
 
 function rdpV(p,e){if(p.length<3)return p;let md=0,mi=0;const a=p[0],b=p[p.length-1],dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy);for(let i=1;i<p.length-1;i++){const d=L<1e-9?Math.hypot(p[i].x-a.x,p[i].y-a.y):Math.abs(dy*p[i].x-dx*p[i].y+b.x*a.y-b.y*a.x)/L;if(d>md){md=d;mi=i}}return md>e?rdpV(p.slice(0,mi+1),e).slice(0,-1).concat(rdpV(p.slice(mi),e)):[a,b]}
-function simpV(V){const o=[];let s=0;for(let i=0;i<V.length;i++)if(!V[i].c||i==V.length-1){o.push(...rdpV(V.slice(s,i+1),.0008));s=i+1}return o}
+function simpV(V){const o=[];let s=0;for(let i=0;i<V.length;i++)if(!V[i].c||i==V.length-1){o.push(...rdpV(V.slice(s,i+1),.0001));s=i+1}return o}
 function exCurve(V){const L=[0];for(let i=0;i<V.length;i++){const a=V[i],b=V[(i+1)%V.length];L.push(L[i]+Math.hypot(b.x-a.x,b.y-a.y)*(a.c?1:CF))}const T=L[V.length],o=[];let j=0;for(let q=0;q<M;q++){const s=q*T/M;while(j<V.length-1&&L[j+1]<s)j++;const a=V[j],b=V[(j+1)%V.length],u=(s-L[j])/((L[j+1]-L[j])||1);o.push({x:a.x+(b.x-a.x)*u,y:a.y+(b.y-a.y)*u,c:a.c})}return o}
 function setN(n){S.n=n;S.full=0;if(n>=S.mx-2){S.cc=S.cs.map(()=>[[0,0,0]]);cur=S.eg.map(exCurve);if(!S.vm&&S.exE==null)S.exE=S.at?(S.mx-3)*S.T*1000:Date.now()-S.t0}else{S.exE=null;S.cc=S.cs.map((cs,gi)=>circ(cs,n,S.sz[gi]));cur=S.cc.map((c,gi)=>curve(c,S.fl[gi]))}}
 
@@ -193,7 +194,7 @@ function send(){R&&R.emit('st',{rid:S.rid,fl:S.fl,n:S.n,c:S.cc,el:Date.now()-S.t
 function start(st,it){
  const d=prep(st,it&&it.g);if(!d){flash('線條太短，再畫一次');return}
  Object.assign(S,{mode:'run',own:1,rid:Math.random().toString(36).slice(2,8),fl:d.fl,cs:d.cs,mx:13,sz:d.sz,bank:S.bk?1:0,hn:0,ht:[],at:(g('adv')=='a'||S.bk)?1:0,au:0,lc:undefined,cv:{},hist:[{v:0,n:1}],vmx:0,og:d.og,eg:d.gv,exE:null,full:0,sg:g('sg'),vm:!R&&!S.solo?1:0,v:0,sp:1,lt:performance.now(),T:Math.max(2,+g('tt')||4),t0:Date.now(),al:[it.n,...it.al].map(s=>s.toLowerCase()),ans:it.n,mult:1+0.2*(it.lv|0),fc:undefined});
- shown=[];last=-1;$('log').innerHTML='';setHint(S.solo||S.bk?hint():'',it.lv|0,S.solo||S.bk?g('hd'):0);S.bb=[+Math.max(...S.og.map(v=>Math.abs(v.x))).toFixed(3),+Math.max(...S.og.map(v=>Math.abs(v.y))).toFixed(3)];S.cl=S.cs.map((cs,gi)=>sortCs(cs).slice(0,S.sz[gi][9]).map(c=>[c.k,+c.re.toFixed(3),+c.im.toFixed(3)]));S.c0=S.cs.map(cs=>{const c=cs.find(c=>!c.k);return[0,+c.re.toFixed(3),+c.im.toFixed(3)]});S.exw=S.eg.map(V=>V.flatMap(v=>[+v.x.toFixed(3),+v.y.toFixed(3),+v.c]));S.rr=S.cs.map((cs,gi)=>+ext(circ(cs,10,S.sz[gi])).toFixed(3));setN(1);send();S.bk=0;ui();
+ shown=[];last=-1;$('log').innerHTML='';setHint(hint(),it.lv|0,g('hd'));S.bb=[+Math.max(...S.og.map(v=>Math.abs(v.x))).toFixed(3),+Math.max(...S.og.map(v=>Math.abs(v.y))).toFixed(3)];S.cl=S.cs.map((cs,gi)=>sortCs(cs).slice(0,S.sz[gi][9]).map(c=>[c.k,+c.re.toFixed(3),+c.im.toFixed(3)]));S.c0=S.cs.map(cs=>{const c=cs.find(c=>!c.k);return[0,+c.re.toFixed(3),+c.im.toFixed(3)]});S.exw=S.eg.map(V=>V.flatMap(v=>[+v.x.toFixed(3),+v.y.toFixed(3),+v.c]));S.rr=S.cs.map((cs,gi)=>+ext(circ(cs,10,S.sz[gi])).toFixed(3));setN(1);send();S.bk=0;ui();
 }
 function pts(){const e=Date.now()-S.t0;return Math.round(100*S.mult*(1-.6*(S.n-1)/S.mx)*(1-.3*Math.min(1,e/(S.T*1000*CELLS))))}
 function okG(tx){tx=tx.trim().toLowerCase();return tx&&S.al.some(a=>tx===a||(a.length>1&&tx.includes(a)))}
@@ -227,7 +228,7 @@ const hnMax=()=>Math.max(0,Math.min(5,+g('hn')|0));
 const hintRow=()=>{if((MU[R.id]||0)&3)return'<div class="row" style="color:var(--mu)">你目前被房主禁言</div>';const left=hnMax()-(S.hn||0);return left>0?'<div class="row"><input id="hti" placeholder="給大家的提示（剩 '+left+' 次，每次扣你 20% 得分）" maxlength="24"><button data-a="ht">送出提示</button></div>':'<div class="row" style="color:var(--mu)">'+(hnMax()?'提示次數已用完':'這個房間已關閉提示')+'</div>'};
 function showHt(){const b=$('htb'),on=S.mode=='run'&&S.ht&&S.ht.length;b.hidden=!on;if(on)b.textContent='💡 提示：'+S.ht.join('　')}
 const capAdd=l=>l|0;
-const capN=()=>{if(!R)return Infinity;const c=+g('cap');return c>0?c+capAdd(S.item?S.item.lv|0:0):Infinity};
+const capN=()=>{if(!R||g('md')=='bank')return Infinity;const c=+g('cap');return c>0?c+capAdd(S.item?S.item.lv|0:0):Infinity};
 const spd=()=>updSol();
 const act={
  cp(){return cpy()},ref(){showRef()},
@@ -271,13 +272,13 @@ function cpy(){const st=strokes.filter(t=>t.p.length>1);if(!st.length)return fla
 function drawPad(){const rs=$('rs');if(rs)rs.textContent=!R?'你畫了 '+strokes.length+' 筆':(capN()==Infinity?'筆數不限':'剩 '+(capN()-strokes.length)+' 筆');
  const x=pad.getContext('2d'),dp=devicePixelRatio;x.setTransform(dp,0,0,dp,0,0);x.clearRect(0,0,pad.width,pad.height);
  x.lineCap=x.lineJoin='round';x.lineWidth=3;
- strokes.forEach(s=>{x.strokeStyle=x.shadowColor=COLS[s.c];x.shadowBlur=+g('glw');x.beginPath();s.p.forEach((q,i)=>i?x.lineTo(q[0],q[1]):x.moveTo(q[0],q[1]));x.stroke()});
+ strokes.forEach(s=>{x.strokeStyle=x.shadowColor=COLS[s.c];x.shadowBlur=+g('glw');if(s.p.length==1){x.fillStyle=COLS[s.c];x.beginPath();x.arc(s.p[0][0],s.p[0][1],3,0,7);x.fill();return}x.beginPath();s.p.forEach((q,i)=>i?x.lineTo(q[0],q[1]):x.moveTo(q[0],q[1]));x.stroke()});
 }
 const pt=e=>{const r=pad.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]};
 pad.onpointerdown=e=>{if(strokes.length>=capN()){flash('筆數已達上限，可先撤銷');return}pad.setPointerCapture(e.pointerId);dr=1;strokes.push({p:[pt(e)],c:ci});drawPad()};
 pad.onpointermove=e=>{if(!dr)return;const s=strokes[strokes.length-1],q=pt(e),l=s.p[s.p.length-1];if(Math.hypot(q[0]-l[0],q[1]-l[1])>3){s.p.push(q);drawPad()}};
 const strokeLen=p=>{let l=0;for(let i=1;i<p.length;i++)l+=Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]);return l};
-pad.onpointerup=pad.onpointercancel=()=>{const was=dr;dr=0;if(was){const s=strokes[strokes.length-1];if(s&&(s.p.length<2||strokeLen(s.p)<8))strokes.pop();drawPad()}sendPg()};
+pad.onpointerup=pad.onpointercancel=()=>{const was=dr;dr=0;if(was)drawPad();sendPg()};
 
 function size(){const r=$('stage').getBoundingClientRect(),dp=devicePixelRatio;[cv,pad].forEach(c=>{c.width=r.width*dp;c.height=r.height*dp});if(S.mode=='setup')drawPad()}
 new ResizeObserver(size).observe($('stage'));
@@ -495,14 +496,14 @@ let FSD=0;const STANDALONE=()=>matchMedia('(display-mode: fullscreen)').matches|
 if(matchMedia('(min-width:900px)').matches)document.querySelectorAll('#setbox details').forEach(d=>d.open=true);
 addEventListener('pointerup',()=>{if(FSD||STANDALONE()||document.fullscreenElement)return;const e=document.documentElement;if(!e.requestFullscreen)return;FSD=1;e.requestFullscreen({navigationUI:'hide'}).catch(()=>{FSD=0})},true);
 let BKT=0;addEventListener('popstate',()=>{if($('game').hidden)return;if(Date.now()-BKT<1800){BKT=0;history.back();return}BKT=Date.now();try{history.pushState({fg:1},'')}catch(e){}toast('再滑一次返回才會離開頁面',1500)});
-(()=>{const vv=window.visualViewport,f=()=>{const h=vv?vv.height:innerHeight;document.documentElement.style.setProperty('--vvh',h+'px');document.body.style.transform=vv&&vv.offsetTop?'translateY('+vv.offsetTop+'px)':'';document.documentElement.classList.toggle('kb',(vv?vv.height:innerHeight)<screen.height*.72&&innerWidth<=899);document.documentElement.classList.toggle('ls',!PORT()&&innerWidth>innerHeight&&innerHeight<=520&&innerWidth<=899);scrollTo(0,0)};if(vv){vv.addEventListener('resize',f);vv.addEventListener('scroll',f)}addEventListener('resize',f);addEventListener('orientationchange',()=>setTimeout(f,200));f()})();
+(()=>{const vv=window.visualViewport,f=()=>{const h=Math.min(vv?vv.height:1e9,innerHeight,document.documentElement.clientHeight||1e9),act=document.activeElement,foc=!!(act&&act.tagName=='INPUT'&&act.closest&&act.closest('#game'));document.documentElement.style.setProperty('--vvh',h+'px');document.body.style.transform=vv&&vv.offsetTop?'translateY('+vv.offsetTop+'px)':'';document.documentElement.classList.toggle('kb',(h<screen.height*.72||foc)&&innerWidth<=899);document.documentElement.classList.toggle('ls',!PORT()&&innerWidth>innerHeight&&innerHeight<=520&&innerWidth<=899);scrollTo(0,0)};if(vv){vv.addEventListener('resize',f);vv.addEventListener('scroll',f)}addEventListener('resize',f);addEventListener('orientationchange',()=>setTimeout(f,200));addEventListener('focusin',()=>{[0,120,350,700].forEach(d=>setTimeout(f,d))});addEventListener('focusout',()=>{setTimeout(f,150)});f()})();
 $('stage').addEventListener('touchmove',e=>e.preventDefault(),{passive:false});pad.addEventListener('touchstart',e=>e.preventDefault(),{passive:false});
 $('plb').onclick=()=>$('plp').classList.toggle('on');
 $('refx').onclick=()=>{$('refp').hidden=true};$('refp').addEventListener('click',e=>{if(e.target.id=='refp')$('refp').hidden=true});
 document.addEventListener('click',e=>{if(!e.target.closest('#pmenu'))closeM()},true);
 $('dlgy').onclick=()=>{$('dlg').hidden=true;const f=dcb;dcb=null;f&&f()};$('dlgn').onclick=()=>{$('dlg').hidden=true;dcb=null};
 addEventListener('pageshow',e=>{if(e.persisted)location.reload()});
-function syncTg(){renderCx();document.querySelectorAll('[data-tg]').forEach(t=>{const i=$(t.dataset.tg),on=+i.value>0;t.classList.toggle('on',on);i.hidden=!on});$('dtrow').hidden=$('md').value!='turn';$('dtu').hidden=!(+$('dt').value>0);$('capn').hidden=+$('cap').value>0;$('dtn').hidden=+$('dt').value>0}
+function syncTg(){renderCx();$('caprow').hidden=$('md').value=='bank';document.querySelectorAll('[data-tg]').forEach(t=>{const i=$(t.dataset.tg),on=+i.value>0;t.classList.toggle('on',on);i.hidden=!on});$('dtrow').hidden=$('md').value!='turn';$('dtu').hidden=!(+$('dt').value>0);$('capn').hidden=+$('cap').value>0;$('dtn').hidden=+$('dt').value>0}
 $('setbox').addEventListener('click',e=>{const t=e.target.closest('[data-tg]');if(t){const i=$(t.dataset.tg);if(+i.value>0){i.dataset.last=i.value;i.value=0}else i.value=i.dataset.last||'3';syncTg();pub();return}const b=e.target.closest('[data-m]');if(!b)return;$('md').value=b.dataset.m;document.querySelectorAll('.mbtn').forEach(x=>x.classList.toggle('on',x===b));syncTg();pub()});syncTg();
 $('ldb').onclick=()=>{LD=LD=='none'?'all':'none';$('ldb').classList.toggle('on',LD!='none')};
 $('log').addEventListener('scroll',()=>{const l=$('log');AS=l.scrollTop+l.clientHeight>=l.scrollHeight-8});
