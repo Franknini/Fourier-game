@@ -65,7 +65,12 @@ html:not(.ls) #game.lk:has(.gr) #log{order:1;flex:1 1 0;min-width:0;max-height:m
 .tk{position:absolute;top:4px;right:4px;color:#ffd84a;line-height:0;display:none}.tk .ic{width:15px;height:15px}.tk .ic path{fill:#ffd84a;stroke:#ffd84a}.tk.on{display:block}
 .gl{font-size:calc(13px*var(--fs));margin-top:4px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.gv{text-align:center;font-size:calc(12px*var(--fs));min-height:1.2em}
 #zbd{position:fixed;inset:0;background:#02020acc;z-index:90;opacity:0;transition:opacity .3s}#zbd.o{opacity:1}
-.zc{position:fixed;z-index:91;background:var(--pn);border:1px solid var(--c1);border-radius:14px;overflow:hidden;transition:left .32s ease,top .32s ease,width .32s ease,box-shadow .32s;box-shadow:0 0 0 #0000}.zc.o{box-shadow:0 10px 44px #000b}
+.zc{position:fixed;z-index:91;background:var(--pn);border:1px solid var(--c1);border-radius:14px;overflow:hidden;will-change:transform,clip-path;box-shadow:0 0 0 #0000}.zc.o{box-shadow:0 10px 44px #000b}
+.lbn{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top,0px));width:min(92vw,400px);margin-left:calc(min(92vw,400px) / -2);height:58px;z-index:160;pointer-events:none}
+.lbb{position:absolute;inset:0;border-radius:6px;background:linear-gradient(#ffe98a,#f0b934 55%,#d8981c);border:2px solid #9a6a10;box-shadow:0 6px 20px #000a,inset 0 0 0 2px #fff6;overflow:hidden;clip-path:inset(0 50% 0 50%)}
+.lbb::after{content:'';position:absolute;top:0;bottom:0;width:70px;left:-90px;background:linear-gradient(100deg,transparent,#fffa,transparent);animation:lsh 1.2s .55s ease-out forwards}@keyframes lsh{to{left:110%}}
+.lbt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:8px;color:#3a2400;font-weight:800;font-size:calc(20px*var(--fs));white-space:nowrap;padding:0 22px;text-shadow:0 1px 0 #fff8}.lbt span:first-child{overflow:hidden;text-overflow:ellipsis;max-width:62%}.lbt .ic{width:24px;height:24px;color:#3a2400}.lbt .ic path{fill:#3a2400;stroke:#3a2400}
+.lbr{position:absolute;top:-6px;bottom:-6px;left:50%;width:14px;margin-left:-7px;border-radius:7px;background:linear-gradient(90deg,#7a4e0a,#f6d56a 45%,#7a4e0a);box-shadow:0 3px 8px #000a}
 .zi{position:relative;aspect-ratio:1;background:#0b0b1e}.zi canvas{width:100%;height:100%;display:block}
 .zs{position:absolute;left:10px;top:8px;font-size:calc(20px*var(--fs));text-shadow:0 0 6px #000;line-height:1.1}
 .zlk{position:absolute;right:8px;top:8px;display:flex;align-items:center;gap:4px;background:#0b0b1ecc;border:1px solid #556;border-radius:18px;padding:5px 10px;color:#cfd6ff;font-size:calc(14px*var(--fs));cursor:pointer}.zlk[hidden]{display:none}.zlk.lit{color:#ffd84a;border-color:#ffd84a}.zlk.lit .ic path{fill:#ffd84a}.zlk:disabled{cursor:default}
@@ -231,7 +236,7 @@ const likeN=rid=>R?R.peers().filter(p=>p.presence.lk&&p.presence.lk[rid]).length
 function placeLike(){const b=$('lkb'),st=$('stage').getBoundingClientRect();if(!st.width)return;const wide=geo(st.width,st.height,true).wide;if(wide){b.style.left='50%';b.style.right='auto';b.style.transform='translateX(-100%)';b.style.marginLeft='-8px';b.style.top='8px'}else{b.style.left='auto';b.style.right='10px';b.style.transform='none';b.style.marginLeft='0';b.style.top='62px'}}
 function likeUI(){const b=$('lkb');if(!b)return;const r=LAST,on=!!(R&&g('md')=='turn'&&S.mode=='end'&&r&&S.rid===r.rid);if(!on){b.hidden=true;return}const n=likeN(r.rid),own=r.by===R.id;b.classList.toggle('lit',!!MYLK[r.rid]);b.disabled=own;$('lkn').textContent=n?'×'+n:'';b.hidden=own&&!n;if(!b.hidden)placeLike()}
 let ltt;function ltoast(t){let e=$('ltoast');if(!e){e=document.createElement('div');e.id='ltoast';e.style.cssText='position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));transform:translateX(-50%);z-index:70;background:#12122af0;border:1px solid #ffd84a;color:#ffd84a;border-radius:10px;padding:8px 14px;font-size:calc(16px*var(--fs));transition:opacity .4s;pointer-events:none;max-width:90vw;opacity:0';document.body.append(e)}e.textContent=t;e.style.opacity=1;clearTimeout(ltt);ltt=setTimeout(()=>{e.style.opacity=0},2500)}
-function likeToast(){if(!R)return;GL.forEach(r=>{if(r.by!==R.id)return;const n=likeN(r.rid),o=lkLast[r.rid]||0;if(n>o)ltoast(r.ans+' 👍×'+n);lkLast[r.rid]=n})}
+function likeToast(){if(!R)return;GL.forEach(r=>{if(r.by!==R.id)return;const n=likeN(r.rid),o=lkLast[r.rid]||0;if(n>o)likeBanner(r.ans,n);lkLast[r.rid]=n})}
 $('lkb').onclick=lkTog;
 const swo=document.createElement('div');swo.id='swo';swo.hidden=true;document.body.append(swo);
 swo.onclick=e=>{const b=e.target.closest('[data-a]');if(!b||!TQ)return;if(b.dataset.a=='sww'){TQ.sw=2;swShow()}else if(b.dataset.a=='sbn')act.sbn()};
@@ -261,7 +266,11 @@ function mkTile(rec,cls){const d=document.createElement('div');d.className=cls;c
 
 /* --- 放大卡片 --- */
 let ZC=null;
-function zoomClose(now){if(!ZC)return;const z=ZC;ZC=null;if(now){z.bd.remove();z.card.remove();return}const el=z.cfg.el&&z.cfg.el();z.bd.classList.remove('o');z.card.classList.remove('o');if(el){const r=el.getBoundingClientRect();z.card.style.left=r.left+'px';z.card.style.top=r.top+'px';z.card.style.width=r.width+'px'}else z.card.style.opacity=0;setTimeout(()=>{z.bd.remove();z.card.remove()},340)}
+const ZE='cubic-bezier(.2,.8,.2,1)';
+function zoomFrom(z,r){const s=r.width/z.W;return{tr:'translate('+(r.left-z.L)+'px,'+(r.top-z.T)+'px) scale('+s+')',cp:'inset(0 0 '+Math.max(0,z.H-z.W)+'px 0 round 14px)'}}
+function zoomClose(now){if(!ZC)return;const z=ZC;ZC=null;if(now){z.bd.remove();z.card.remove();return}const el=z.cfg.el&&z.cfg.el();z.bd.classList.remove('o');z.card.classList.remove('o');
+ if(el){const f=zoomFrom(z,el.getBoundingClientRect());z.card.style.transition='transform .3s '+ZE+',clip-path .3s '+ZE+',box-shadow .3s';z.card.style.transform=f.tr;z.card.style.clipPath=f.cp}else{z.card.style.transition='opacity .25s';z.card.style.opacity=0}
+ setTimeout(()=>{z.bd.remove();z.card.remove()},330)}
 function zoomOpen(srcEl,cfg){zoomClose(true);cfg.el=cfg.el||(()=>srcEl.isConnected?srcEl:null);const bd=document.createElement('div');bd.id='zbd';const card=document.createElement('div');card.className='zc';
  const zi=document.createElement('div');zi.className='zi';const cv=document.createElement('canvas');zi.append(cv);drawStrokes(cv,recStrokes(cfg.rec||cfg.item),720);
  const zs=document.createElement('div');zs.className='zs';zs.innerHTML=stars(cfg.lv);zi.append(zs);
@@ -275,9 +284,10 @@ function zoomOpen(srcEl,cfg){zoomClose(true);cfg.el=cfg.el||(()=>srcEl.isConnect
   const showAu=()=>{au.textContent='';const s=document.createElement('span');s.style.cursor='pointer';s.textContent='作者：'+(cfg.item.au||'（未填）')+'  ✎';s.onclick=e=>{e.stopPropagation();ed()};au.append(s)};
   const ed=()=>{au.textContent='';const i=document.createElement('input');i.value=cfg.item.au||'';i.maxLength=8;i.style.cssText='width:9em;text-align:center';let done=0;const ok=()=>{if(done)return;done=1;const v=i.value.trim().slice(0,8),cur=VT[cfg.item.id];if(cur&&v!==(cur.au||'')){vtPut(Object.assign({},cur,{au:v}));cfg.item=VT[cfg.item.id];vtRender()}showAu()};i.onblur=ok;i.onkeydown=e=>{if(e.key=='Enter')ok()};i.onclick=e=>e.stopPropagation();au.append(i);i.focus();i.select()};showAu()}
  card.onclick=e=>e.stopPropagation();bd.onclick=()=>zoomClose();
- const r=srcEl.getBoundingClientRect();card.style.left=r.left+'px';card.style.top=r.top+'px';card.style.width=r.width+'px';document.body.append(bd,card);ZC=z;zoomRefresh();
- const W=Math.max(160,Math.min(innerWidth*.86,innerHeight*.56,440)),H=W+(cfg.mode=='vault'?96:62);
- requestAnimationFrame(()=>requestAnimationFrame(()=>{if(ZC!==z)return;bd.classList.add('o');card.classList.add('o');card.style.width=W+'px';card.style.left=(innerWidth-W)/2+'px';card.style.top=Math.max(8,(innerHeight-H)/2)+'px'}))}
+ const W=Math.max(160,Math.min(innerWidth*.86,innerHeight*.56,440));card.style.width=W+'px';card.style.left='0px';card.style.top='0px';card.style.visibility='hidden';document.body.append(bd,card);ZC=z;zoomRefresh();
+ const H=card.offsetHeight,L=(innerWidth-W)/2,T=Math.max(8,(innerHeight-H)/2);Object.assign(z,{W,H,L,T});card.style.left=L+'px';card.style.top=T+'px';card.style.transformOrigin='0 0';
+ const f=zoomFrom(z,srcEl.getBoundingClientRect());card.style.transform=f.tr;card.style.clipPath=f.cp;card.style.visibility='';void card.offsetWidth;card.style.transition='transform .34s '+ZE+',clip-path .34s '+ZE+',box-shadow .34s';
+ requestAnimationFrame(()=>{if(ZC!==z)return;bd.classList.add('o');card.classList.add('o');card.style.transform='none';card.style.clipPath='inset(0 0 0 0 round 14px)'})}
 function zoomRefresh(){const z=ZC;if(!z)return;const c=z.cfg;if(c.mode=='fin'){const rec=c.rec,n=likeN(rec.rid),own=!R||rec.by===R.id;z.lk.innerHTML=IC.up+(n?'<span>×'+n+'</span>':'');z.lk.classList.toggle('lit',!!MYLK[rec.rid]);z.lk.disabled=own;z.lk.hidden=own&&!n;z.b3.classList.toggle('lit',vtSaved(rec));z.b3.firstChild&&z.b3.firstChild.classList&&z.b3.firstChild.classList.toggle('on',vtSaved(rec))}}
 function lkToggle(rid,by){if(!R||!rid||by===R.id)return;if(MYLK[rid])delete MYLK[rid];else MYLK[rid]=1;R.presence({lk:Object.keys(MYLK).length?Object.assign({},MYLK):null});likeUI();finRefresh()}
 function lkTog(){const r=LAST;if(r)lkToggle(r.rid,r.by)}
@@ -316,10 +326,10 @@ function vtClose(){zoomClose(true);vault.hidden=true}
 vault.onclick=()=>{if(lpF){lpF=0;return}if(VX){VX=0;vtRender()}};
 function btn(html,fn,cls,label){const b=document.createElement('button');b.className=cls||'g';b.innerHTML=html;if(label)b.setAttribute('aria-label',label);b.onclick=e=>{e.stopPropagation();fn(e)};return b}
 function vtRender(){if(vault.hidden)return;vault.textContent='';const h=document.createElement('div');h.className='vh';const ti=document.createElement('b');
- if(VM=='main'){ti.textContent='儲存倉庫';h.append(btn('←',vtClose,'g','返回'),ti,btn('依作者',()=>{VG=VG?0:1;try{localStorage.setItem('fv_vg',VG)}catch(e){}vtRender()},VG?'g on':'g','依作者排版'),btn(IC.tr+(vTrash().length?'<span>'+vTrash().length+'</span>':''),()=>{VM='trash';VX=0;VS=0;VP=0;vtRender();vault.scrollTop=0},'g','垃圾桶'),btn(IC.cl,()=>{VS=VS?0:1;VP=0;vtRender()},VS?'g on':'g','雲端與備份'),btn(IC.gr,()=>{VP=VP?0:1;VS=0;vtRender()},VP?'g on':'g','下載設定'))}
+ if(VM=='main'){ti.textContent='儲存倉庫';h.append(btn('←',vtClose,'g','返回'),ti,btn('依作者',()=>{VG=VG?0:1;try{localStorage.setItem('fv_vg',VG)}catch(e){}vtRender()},VG?'g on':'g','依作者排版'),btn(IC.tr+(vTrash().length?'<span>'+vTrash().length+'</span>':''),()=>{VM='trash';VX=0;VS=0;VP=0;vtRender();vault.scrollTop=0},'g','垃圾桶'),btn(IC.cl,()=>{VS=VS?0:1;VP=0;vtRender()},VS?'g on':'g','雲端與備份'))}
  else{ti.textContent='垃圾桶';h.append(btn('←',()=>{VM='main';vtRender()},'g','返回'),ti,btn('全部刪除',()=>{if(!vTrash().length)return;askc('確定永久刪除垃圾桶內全部圖片？無法復原',()=>{vTrash().forEach(i=>vtPut({id:i.id,x:1}));vtRender()})},'g'))}
  vault.append(h);const body=document.createElement('div');body.className='vbody';vault.append(body);
- if(VS&&VM=='main')body.append(vtSyncBox());if(VP&&VM=='main')body.append(vtSetBox());
+ if(VS&&VM=='main')body.append(vtSyncBox());
  const list=VM=='main'?vLive():vTrash();
  if(!list.length){const e=document.createElement('div');e.className='vemp';e.textContent=VM=='main'?'還沒有儲存的圖。在頒獎台點開一張原圖，按書籤圖示就會存到這裡。':'垃圾桶是空的';body.append(e);return}
  const grid=its=>{const gr=document.createElement('div');gr.className='vgg';its.forEach(it=>gr.append(vtTile(it)));return gr};
@@ -341,8 +351,8 @@ function vtImport(txt){let o;try{o=JSON.parse(txt)}catch(e){return ztoast('檔�
 IC.gr='<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1"/></svg>';
 /* --- 下載圖片：款式、設定、渲染 --- */
 const DLS={A:'午夜極簡',B:'美術館展籤',C:'霓虹網格',D:'金邊典藏',N:'無邊框（只有圖）'};
-function dlCfg(){let c={};try{c=JSON.parse(localStorage.getItem('fv_dl')||'{}')||{}}catch(e){}return{st:DLS[c.st]?c.st:'A',au:c.au!==0,ft:c.ft!==0}}
-function dlSave(c){try{localStorage.setItem('fv_dl',JSON.stringify({st:c.st,au:c.au?1:0,ft:c.ft?1:0}))}catch(e){}}
+function dlCfg(){let c={};try{c=JSON.parse(localStorage.getItem('fv_dl')||'{}')||{}}catch(e){}return{st:DLS[c.st]?c.st:'A',au:c.au!==0,ft:c.ft!==0,sh:c.sh===1}}
+function dlSave(c){try{localStorage.setItem('fv_dl',JSON.stringify({st:c.st,au:c.au?1:0,ft:c.ft?1:0,sh:c.sh?1:0}))}catch(e){}}
 function renderDl(it,st,sc,cfo){sc=sc||1;const cf=cfo||dlCfg(),W=1080,H=st=='N'?1080:1350,c=document.createElement('canvas');c.width=Math.round(W*sc);c.height=Math.round(H*sc);const x=c.getContext('2d');x.scale(sc,sc);
  const FN='"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif',SF='"Noto Serif TC","Songti TC","PMingLiU",serif',lv=Math.max(0,Math.min(3,it.lv|0)),col=SC[lv],stT=lv>0?'★'.repeat(lv):'☆',n=it.n||'';
  const fit=(txt,font,max,s)=>{x.font=font(s);while(x.measureText(txt).width>max&&s>36){s-=4;x.font=font(s)}};
@@ -373,21 +383,42 @@ function renderDl(it,st,sc,cfo){sc=sc||1;const cf=cfo||dlCfg(),W=1080,H=st=='N'?
   x.fillStyle='#0a0a18';x.fillRect(110,350,860,860);x.strokeStyle=gold;x.lineWidth=2;x.strokeRect(110,350,860,860);x.drawImage(art(800,0),140,380,800,800);
   const t=[au?'作者  '+au:'',cf.ft?'傅立葉猜圖':''].filter(Boolean).join('　◆　');if(t){x.fillStyle='#d9bd78';x.font='30px '+SF;x.textAlign='center';x.fillText(t,W/2,1246);x.textAlign='left'}}
  return c}
-function dlDo(it,st){const c=renderDl(it,st,1),name=(it.n||'傅立葉猜圖').replace(/[\\/:*?"<>|]/g,'_')+(st=='N'?'':'_'+st);
- c.toBlob(async b=>{const f=new File([b],name+'.png',{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:it.n});return}catch(e){if(e&&e.name=='AbortError')return}}const u=URL.createObjectURL(b),l=document.createElement('a');l.href=u;l.download=f.name;document.body.append(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);ztoast('已下載圖片')},'image/png')}
+function dlDo(it,st){const cf=dlCfg(),c=renderDl(it,st,1),name=(it.n||'傅立葉猜圖').replace(/[\\/:*?"<>|]/g,'_')+(st=='N'?'':'_'+st);
+ c.toBlob(async b=>{const f=new File([b],name+'.png',{type:'image/png'});if(cf.sh&&navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:it.n});return}catch(e){if(e&&e.name=='AbortError')return}}const u=URL.createObjectURL(b),l=document.createElement('a');l.href=u;l.download=f.name;document.body.append(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);ztoast('已下載圖片')},'image/png')}
 function dlImage(it){dlPicker(it)}
-function dlPicker(it){const old=$('dlp');if(old)old.remove();const cf=dlCfg(),bd=document.createElement('div');bd.id='dlp';bd.style.cssText='position:fixed;inset:0;z-index:100;background:#000d;overflow:auto;padding:calc(14px + env(safe-area-inset-top,0px)) 14px 24px';
- const box=document.createElement('div');box.style.cssText='max-width:520px;margin:0 auto';const h=document.createElement('div');h.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:10px';const ht=document.createElement('b');ht.style.cssText='flex:1;font-size:calc(17px*var(--fs))';ht.textContent='選擇下載款式';h.append(ht,btn('✕',()=>bd.remove(),'g','關閉'));
- const gr=document.createElement('div');gr.style.cssText='display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px';
- Object.keys(DLS).forEach(k=>{const d=document.createElement('div');d.dataset.st=k;d.style.cssText='cursor:pointer;border:2px solid '+(k==cf.st?'#ffd84a':'#2a2a50')+';border-radius:10px;padding:4px;background:#0d0d1d';const cv=renderDl(it,k,.28,cf);cv.style.cssText='width:100%;display:block;border-radius:6px';const l=document.createElement('div');l.style.cssText='text-align:center;margin-top:4px;font-size:calc(13px*var(--fs))';l.textContent=DLS[k];d.append(cv,l);if(k==cf.st){d.style.position='relative';const bg=document.createElement('span');bg.textContent='上次使用';bg.style.cssText='position:absolute;top:10px;right:10px;background:#ffd84a;color:#111;font-size:12px;font-weight:700;padding:2px 7px;border-radius:9px';d.append(bg)}d.onclick=()=>{const c=dlCfg();c.st=k;dlSave(c);bd.remove();dlDo(it,k)};gr.append(d)});
- const tip=document.createElement('div');tip.style.cssText='color:var(--mu);font-size:calc(12px*var(--fs));margin-top:10px;line-height:1.6';tip.textContent='點一款就會下載，之後預設用這一款，直到你換掉。作者和「傅立葉猜圖」文字可到倉庫右上角的設定（齒輪）關閉。';
- box.append(h,gr,tip);bd.append(box);bd.onclick=e=>{if(e.target===bd)bd.remove()};document.body.append(bd)}
-function vtSetBox(){const b=document.createElement('div');b.className='vsy';const c=dlCfg();const t=document.createElement('b');t.textContent='下載圖設定';b.append(t);
- const row=(label,key)=>{const l=document.createElement('label');l.style.cssText='display:flex;align-items:center;gap:8px;margin-top:8px';const i=document.createElement('input');i.type='checkbox';i.checked=!!c[key];i.onchange=()=>{const n=dlCfg();n[key]=i.checked;dlSave(n)};l.append(i,document.createTextNode(label));return l};
- b.append(row('在圖片底部顯示作者','au'),row('在圖片底部顯示「傅立葉猜圖」','ft'));
- const r=document.createElement('div');r.style.cssText='margin-top:10px;display:flex;gap:8px;align-items:center';r.append(document.createTextNode('預設款式'));const s=document.createElement('select');Object.keys(DLS).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=DLS[k];if(k==c.st)o.selected=true;s.append(o)});s.onchange=()=>{const n=dlCfg();n.st=s.value;dlSave(n)};r.append(s);b.append(r);
- const p=document.createElement('div');p.style.cssText='color:var(--mu);font-size:calc(12px*var(--fs));margin-top:8px;line-height:1.6';p.textContent='只影響下載的圖片；「無邊框」款式本來就不含任何文字。';b.append(p);return b}
+function dlOpts(onChange){const w=document.createElement('div');w.style.cssText='margin-top:16px;display:flex;flex-direction:column;gap:10px;padding:0 4px';const c=dlCfg();
+ [['au','顯示作者'],['ft','顯示「傅立葉猜圖」'],['sh','用分享選單儲存（iPhone 想存到相簿勾這個）']].forEach(([k,t])=>{const l=document.createElement('label');l.style.cssText='display:flex;align-items:center;gap:8px';const i=document.createElement('input');i.type='checkbox';i.checked=!!c[k];i.onchange=()=>{const n=dlCfg();n[k]=i.checked;dlSave(n);onChange&&onChange(k)};l.append(i,document.createTextNode(t));w.append(l)});return w}
+function dlPicker(it){const old=$('dlp');if(old)old.remove();let st=null;const bd=document.createElement('div');bd.id='dlp';bd.style.cssText='position:fixed;inset:0;z-index:100;background:#000d;overflow:auto;padding:calc(14px + env(safe-area-inset-top,0px)) 14px 28px';bd.onclick=e=>{if(e.target===bd)bd.remove()};document.body.append(bd);
+ const render=()=>{bd.textContent='';const box=document.createElement('div');box.style.cssText='max-width:520px;margin:0 auto';const cf=dlCfg(),h=document.createElement('div');h.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:10px';
+  const ht=document.createElement('b');ht.style.cssText='flex:1;font-size:calc(17px*var(--fs))';ht.textContent=st?'預覽：'+DLS[st]:'選擇下載款式';if(st)h.append(btn('←',()=>{st=null;render()},'g','返回'));h.append(ht,btn('✕',()=>bd.remove(),'g','關閉'));box.append(h);
+  if(!st){const gr=document.createElement('div');gr.style.cssText='display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px';
+   Object.keys(DLS).forEach(k=>{const d=document.createElement('div');d.dataset.st=k;d.style.cssText='cursor:pointer;position:relative;border:2px solid '+(k==cf.st?'#ffd84a':'#2a2a50')+';border-radius:10px;padding:4px;background:#0d0d1d';const cv=renderDl(it,k,.28,cf);cv.style.cssText='width:100%;display:block;border-radius:6px';const l=document.createElement('div');l.style.cssText='text-align:center;margin-top:4px;font-size:calc(13px*var(--fs))';l.textContent=DLS[k];d.append(cv,l);
+    if(k==cf.st){const bg=document.createElement('span');bg.textContent='上次使用';bg.style.cssText='position:absolute;top:10px;right:10px;background:#ffd84a;color:#111;font-size:12px;font-weight:700;padding:2px 7px;border-radius:9px';d.append(bg)}
+    d.onclick=()=>{st=k;render();bd.scrollTop=0};gr.append(d)});box.append(gr)}
+  else{const cv=renderDl(it,st,.6,cf);cv.style.cssText='display:block;width:min(78vw,380px);margin:0 auto;border-radius:8px;box-shadow:0 8px 30px #000a';box.append(cv);
+   const r=document.createElement('div');r.style.cssText='display:flex;gap:10px;justify-content:center;margin-top:14px';r.append(btn('返回選款式',()=>{st=null;render()},'g'),btn('確定下載',()=>{const c=dlCfg();c.st=st;dlSave(c);bd.remove();dlDo(it,st)},'pri'));box.append(r)}
+  box.append(dlOpts(()=>render()));bd.append(box)};render()}
 $('vbtn').onclick=vtOpen;addEventListener('load',()=>{try{if(localStorage.getItem('fv_cloud'))cloudEnsure()}catch(e){}});
+let LBN=null;
+function lbText(S,title,n){S.tx.textContent='';const a=document.createElement('span');a.textContent=title;const ic=document.createElement('span');ic.innerHTML=IC.up;ic.style.lineHeight='0';const c=document.createElement('span');c.textContent='×'+n;S.tx.append(a,ic,c)}
+function likeBanner(title,n){
+ if(LBN&&LBN.ph<=1){lbText(LBN,title,n);LBN.tx.animate([{transform:'scale(1.22)'},{transform:'scale(1)'}],{duration:280,easing:'ease-out'});LBN.restart();return}
+ if(LBN)LBN.kill();
+ const el=document.createElement('div');el.className='lbn';el.innerHTML='<div class="lbb"><div class="lbt"></div></div><i class="lbr"></i><i class="lbr"></i>';document.body.append(el);
+ const body=el.firstChild,tx=body.firstChild,rl=el.children[1],rr=el.children[2],half=el.offsetWidth/2-7,S=LBN={el,tx,ph:0,t:0,t2:0,kill(){clearTimeout(S.t);clearTimeout(S.t2);el.remove();if(LBN===S)LBN=null}};
+ const hold=1700,ease='cubic-bezier(.2,.9,.25,1.08)',op={duration:520,fill:'forwards',easing:ease};
+ lbText(S,title,n);
+ el.animate([{transform:'translateY(-26px) scale(.92)',opacity:0},{transform:'none',opacity:1}],{duration:240,fill:'forwards',easing:'ease-out'});
+ body.animate([{clipPath:'inset(0 50% 0 50%)'},{clipPath:'inset(0 0 0 0)'}],op);
+ rl.animate([{transform:'translateX(0)'},{transform:'translateX('+(-half)+'px)'}],op);rr.animate([{transform:'translateX(0)'},{transform:'translateX('+half+'px)'}],op);
+ if(navigator.vibrate)try{navigator.vibrate([25,40,25])}catch(e){}
+ const out=()=>{S.ph=2;const o2={duration:460,fill:'forwards',easing:'cubic-bezier(.6,0,.4,1)'};
+  tx.animate([{opacity:1},{opacity:0}],{duration:200,fill:'forwards'});
+  body.animate([{clipPath:'inset(0 0 0 0)'},{clipPath:'inset(0 50% 0 50%)'}],o2);
+  rl.animate([{transform:'translateX('+(-half)+'px)'},{transform:'translateX(0)'}],o2);rr.animate([{transform:'translateX('+half+'px)'},{transform:'translateX(0)'}],o2);
+  S.t2=setTimeout(()=>{S.ph=3;el.animate([{transform:'none',opacity:1},{transform:'translate(30vw,-130px) rotate(540deg) scale(.2)',opacity:0}],{duration:650,fill:'forwards',easing:'cubic-bezier(.5,0,.9,.4)'});S.t2=setTimeout(S.kill,680)},470)};
+ S.restart=()=>{clearTimeout(S.t);S.t=setTimeout(out,hold)};
+ S.t=setTimeout(()=>{S.ph=1;S.restart()},520)}
 function finish(ok,nm,who){
  if(S.mode!='run')return;
  const p=ok?pts():0;S.mode='end';if(S.solo){SOLO.n++;if(ok)SOLO.pts+=p}
