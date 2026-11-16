@@ -86,6 +86,32 @@ html:not(.ls) #game.lk:has(.gr) #log{order:1;flex:1 1 0;min-width:0;max-height:m
 .vemp{text-align:center;color:var(--mu);padding:60px 16px;line-height:1.7}
 .tb{display:flex;gap:6px;justify-content:center;margin-top:4px}.tb button{padding:3px 8px;font-size:calc(12px*var(--fs))}
 .vsy{background:var(--pn);border:1px solid #2a2a50;border-radius:12px;padding:12px;margin:10px 0;font-size:calc(14px*var(--fs));line-height:1.6}.vsy .row{margin-top:8px;justify-content:flex-start}
+
+.abn{position:absolute;left:0;right:0;top:34%;height:108px;z-index:8;pointer-events:none;filter:drop-shadow(0 8px 12px #000b)}
+.abw{position:absolute;inset:0;clip-path:inset(0 100% 0 0)}
+.abw svg{position:absolute;inset:0;width:100%;height:100%}
+.abs{position:absolute;inset:0;clip-path:polygon(0 16.7%,100% 8.3%,100% 91.7%,0 83.3%)}
+.abh{position:absolute;top:0;bottom:0;left:0;width:20%;background:linear-gradient(90deg,transparent,#fffb,transparent)}
+.abw2{position:absolute;inset:0;clip-path:inset(-90px 100% -30px 0)}
+.abt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:12px;padding:0 6%;white-space:nowrap}
+.abt span{flex:none;display:inline-block}
+.abm{max-width:32%;overflow:hidden;text-overflow:ellipsis;font-size:28px;font-weight:800;font-style:italic;transform:skewX(-10deg);color:#7ff6ff;text-shadow:0 0 10px #19f3ff88}
+.aba{font-size:64px;font-weight:900;color:#fff;letter-spacing:.02em;transform:translateY(-15px);text-shadow:0 0 3px #0008,0 0 22px #ffd84acc,0 3px 10px #000a}
+.abp{font-size:30px;font-weight:900;font-style:italic;transform:skewX(-10deg);color:#ffd84a;text-shadow:0 0 12px #ffb02088}
+.abz{position:absolute;left:0;right:0;top:34%;height:108px;z-index:9;pointer-events:none}
+.abr{position:absolute;width:6px;height:16px;border-radius:1px;opacity:0}
+.lkr0{}
+#lkr{max-width:400px;margin:16px auto 0;background:var(--pn);border:1px solid #2a2a50;border-radius:12px;padding:8px 12px;box-sizing:border-box;overflow:hidden;text-align:left}
+.lkh{display:flex;align-items:center;gap:6px;height:30px;font-size:calc(14px*var(--fs));color:#ffd84a;font-weight:700}.lkh .ic{width:18px;height:18px}.lkh .ic path{fill:#ffd84a;stroke:#ffd84a}
+.lkb2{position:relative;overflow:hidden}
+.lkrow{position:absolute;left:0;right:0;top:0;height:30px;display:flex;align-items:center;gap:8px;opacity:0;transition:transform .5s cubic-bezier(.2,.8,.2,1),opacity .3s;font-size:calc(13px*var(--fs))}
+.lkn{width:5.2em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lkt{flex:1;height:12px;background:#15152e;border-radius:6px;overflow:hidden}.lkt i{display:block;height:100%;width:0;border-radius:6px;background:linear-gradient(90deg,#3d8bff,#19f3ff);transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.lkrow.r0 .lkt i{background:linear-gradient(90deg,#ffb020,#ffe27a)}.lkrow.r1 .lkt i{background:linear-gradient(90deg,#9aa6ff,#d9e0ff)}.lkrow.r2 .lkt i{background:linear-gradient(90deg,#ff7a45,#ffb08a)}
+.lkc{width:2.8em;text-align:right;font-weight:700;color:#ffd84a}
+.lke{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--mu);font-size:calc(13px*var(--fs));transition:opacity .3s}
+@media(max-width:899px){#lobby{min-height:100%;max-width:420px;margin:0 auto;padding:max(56px,calc(env(safe-area-inset-top,0px) + 44px)) 18px calc(10vh + env(safe-area-inset-bottom,0px));gap:18px;justify-content:space-between}#lbh{flex:1 1 auto;min-height:0;align-items:center;justify-content:center;text-align:center;gap:8px}#lbc{display:block;height:min(300px,36vh);width:auto;aspect-ratio:1;margin:6px auto 0}}
+@media(max-width:899px) and (max-height:540px){#lbc{display:none}#lobby{padding-top:56px;padding-bottom:24px;justify-content:flex-start}}
 </style></head><body>
 <div id="toast"></div><div id="refp" hidden><div class="rbox"><div class="row"><b>目前題庫的類別與難度</b><button id="refx" class="g">關閉</button></div><div id="reft"></div></div></div><div id="hoff" hidden>房主離線中...</div><div id="dlg" hidden><div class="dbox"><div id="dlgt"></div><div class="row"><button id="dlgy">確認</button><button id="dlgn" class="g">取消</button></div></div></div><div id="lobby">
 <button id="vbtn" class="g" aria-label="儲存倉庫" title="儲存倉庫"><svg class="ic" viewBox="0 0 24 24"><path d="M7 3.5h10v13l-5-3.8-5 3.8z"/><path d="M4 21h16"/></svg></button><div id="lbh"><h1>傅立葉猜圖</h1>
@@ -96,7 +122,7 @@ html:not(.ls) #game.lk:has(.gr) #log{order:1;flex:1 1 0;min-width:0;max-height:m
 <small id="lm"></small></div>
 </div>
 <div id="game" hidden>
-<div id="top"><b id="ti"></b><span id="sol" hidden></span><div id="pl"><button id="plb" class="g">玩家 ▾</button><div id="plp"></div></div><button id="bsh" class="g">分享</button><button id="bx" class="g">離開</button><button id="mnb" class="g" hidden aria-label="選單">☰</button><div id="mnu" hidden><button data-m="stop">結束本局遊戲</button><button data-m="bye" class="g">解散房間</button></div></div>
+<div id="top"><b id="ti"></b><span id="sol" hidden></span><div id="pl"><button id="plb" class="g">玩家 ▾</button><div id="plp"></div></div><button id="bsh" class="g">分享</button><button id="bst" class="g" hidden>結算</button><button id="bx" class="g">離開</button><button id="mnb" class="g" hidden aria-label="選單">☰</button><div id="mnu" hidden><button data-m="share" hidden>分享</button><button data-m="bye" class="g">解散房間</button></div></div>
 <div id="bar"><i id="barf"></i></div><div id="htb" hidden></div><div id="stage"><canvas id="cv"></canvas><canvas id="pad" hidden></canvas><div id="ban" hidden></div><button id="ldb" class="tgb" aria-label="傅立葉圓" title="傅立葉圓" style="position:absolute;left:8px;bottom:8px;z-index:6"></button><div id="hint"></div><button id="lkb" hidden aria-label="按讚" title="按讚" style="position:absolute;z-index:6"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg><span id="lkn"></span></button><div id="cdn" hidden></div><div id="prog" hidden></div><div id="ov" hidden></div><div id="cpp" hidden><textarea id="cpt" rows="4" style="width:100%"></textarea><div class="row"><button id="cpb1">再試一次複製</button><button id="cpb0" class="g">關閉</button></div></div></div>
 <div id="rank"></div><div id="side"><div id="ctl"></div><div id="rules"><h3>📖 基本遊玩規則</h3><ol><li><b>看畫面：</b>一條線由一個個旋轉的圓慢慢畫出圖案，一開始很模糊，圓越疊越多，圖越來越清楚。</li><li><b>猜答案：</b>在下方輸入框打出你猜的答案，按「猜」送出，可以一直猜（每次間隔約 1.5 秒）。</li><li><b>搶先猜中：</b>第一個猜中的人拿到分數，這一題立刻結束。</li><li><b>怎麼算分：</b>越早猜中分數越高，題目星星越多（越難）分數越高。</li><li><b>題庫出題：</b>電腦自動畫，全部玩家一起猜。</li><li><b>輪流手繪：</b>抽籤決定順序，輪到的人選題目、自己畫，其他人猜。出題者猜中時也有分數，但每送一則提示就扣出題者 20%。</li><li><b>結束：</b>房主按結束後，會公布名次，前三名有領獎台。</li></ol></div><div id="log"></div>
 <div id="setbox">
@@ -226,7 +252,7 @@ function send(){R&&R.emit('st',{rid:S.rid,fl:S.fl,n:S.n,c:S.cc,el:Date.now()-S.t
 function start(st,it){
  const d=prep(st,it&&it.g);if(!d){flash('線條太短，再畫一次');return}
  Object.assign(S,{mode:'run',own:1,rid:Math.random().toString(36).slice(2,8),fl:d.fl,cs:d.cs,mx:13,sz:d.sz,bank:S.bk?1:0,hn:0,ht:[],at:(g('adv')=='a'||S.bk)?1:0,au:0,lc:undefined,cv:{},hist:[{v:0,n:1}],vmx:0,og:d.og,eg:d.gv,exE:null,full:0,sg:g('sg'),vm:!R&&!S.solo?1:0,v:0,sp:1,lt:performance.now(),T:Math.max(2,+g('tt')||4),t0:Date.now(),al:[it.n,...it.al].map(s=>s.toLowerCase()),ans:it.n,mult:1+0.2*(it.lv|0),fc:undefined});
- S.fm=(R&&g('md')=='turn'&&!S.bk&&st.length)?fmtTx(st.filter(t=>t.p.length>=1),it.n,it.al||[],it.lv|0,CAT[it.n]||'自訂'):'';shown=[];last=-1;$('log').innerHTML='';setHint(hint(),it.lv|0,g('hd'));S.bb=[+Math.max(...S.og.map(v=>Math.abs(v.x))).toFixed(3),+Math.max(...S.og.map(v=>Math.abs(v.y))).toFixed(3)];S.cl=S.cs.map((cs,gi)=>sortCs(cs).slice(0,S.sz[gi][9]).map(c=>[c.k,+c.re.toFixed(3),+c.im.toFixed(3)]));S.c0=S.cs.map(cs=>{const c=cs.find(c=>!c.k);return[0,+c.re.toFixed(3),+c.im.toFixed(3)]});S.exw=S.eg.map(V=>V.flatMap(v=>[+v.x.toFixed(3),+v.y.toFixed(3),+v.c]));S.rr=S.cs.map((cs,gi)=>+ext(circ(cs,10,S.sz[gi])).toFixed(3));setN(1);send();S.bk=0;ui();
+ if(ABN)ABN.kill();S.fm=(R&&g('md')=='turn'&&!S.bk&&st.length)?fmtTx(st.filter(t=>t.p.length>=1),it.n,it.al||[],it.lv|0,CAT[it.n]||'自訂',true):'';shown=[];last=-1;$('log').innerHTML='';setHint(hint(),it.lv|0,g('hd'));S.bb=[+Math.max(...S.og.map(v=>Math.abs(v.x))).toFixed(3),+Math.max(...S.og.map(v=>Math.abs(v.y))).toFixed(3)];S.cl=S.cs.map((cs,gi)=>sortCs(cs).slice(0,S.sz[gi][9]).map(c=>[c.k,+c.re.toFixed(3),+c.im.toFixed(3)]));S.c0=S.cs.map(cs=>{const c=cs.find(c=>!c.k);return[0,+c.re.toFixed(3),+c.im.toFixed(3)]});S.exw=S.eg.map(V=>V.flatMap(v=>[+v.x.toFixed(3),+v.y.toFixed(3),+v.c]));S.rr=S.cs.map((cs,gi)=>+ext(circ(cs,10,S.sz[gi])).toFixed(3));setN(1);send();S.bk=0;ui();
 }
 function pts(){const e=Date.now()-S.t0;return Math.round(100*S.mult*(1-.6*(S.n-1)/S.mx)*(1-.3*Math.min(1,e/(S.T*1000*CELLS))))}
 function okG(tx){tx=tx.trim().toLowerCase();return tx&&S.al.some(a=>tx===a||(a.length>1&&tx.includes(a)))}
@@ -252,7 +278,7 @@ const IC={
  cl:'<svg class="ic" viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .4-7.98A5.5 5.5 0 0 0 6.9 8.9 4.6 4.6 0 0 0 7 18z"/></svg>'
 };
 let ztt;function ztoast(t){let e=$('ztoast');if(!e){e=document.createElement('div');e.id='ztoast';e.style.cssText='position:fixed;left:50%;bottom:calc(26px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:140;background:#12122af5;border:1px solid var(--c1);border-radius:10px;padding:9px 16px;font-size:calc(15px*var(--fs));pointer-events:none;transition:opacity .35s;opacity:0;max-width:90vw;text-align:center';document.body.append(e)}e.textContent=t;e.style.opacity=1;clearTimeout(ztt);ztt=setTimeout(()=>{e.style.opacity=0},1800)}
-function copyAny(tx){if(!tx)return ztoast('沒有可複製的格式');const done=()=>ztoast('已複製格式（'+tx.length+' 字），貼到 shapes.json 的 [ 後面一行');
+function copyAny(tx){if(!tx)return ztoast('沒有可複製的格式');tx=fmLow(tx);const done=()=>ztoast('已複製格式（'+tx.length+' 字），貼到 shapes.json 的 [ 後面一行');
  const fb=()=>{const m=document.createElement('div');m.style.cssText='position:fixed;inset:0;z-index:145;background:#000c;display:flex;align-items:center;justify-content:center';m.innerHTML='<div class="dbox"><div>自動複製失敗，請長按全選複製</div><textarea rows="4" style="width:70vw;max-width:360px;margin-top:8px"></textarea><div class="row"><button>關閉</button></div></div>';const ta=m.querySelector('textarea');ta.value=tx;m.querySelector('button').onclick=()=>m.remove();document.body.append(m);ta.focus();ta.select()};
  const old=()=>{let ok=0;const ta=document.createElement('textarea');ta.value=tx;ta.style.cssText='position:fixed;opacity:0';document.body.append(ta);ta.select();try{ok=document.execCommand('copy')}catch(e){}ta.remove();ok?done():fb()};
  try{navigator.clipboard.writeText(tx).then(done,old)}catch(e){old()}}
@@ -260,9 +286,9 @@ function recStrokes(rec){if(rec._o)return rec._o;let o=null;if(rec.fm){try{o=JSO
  if(!o&&rec.og&&rec.og.length){const ss=[],ks=[];let cur=[],col=4;rec.og.forEach(v=>{cur.push([v[0],v[1]]);if(v[2]>0)col=v[2]-1;else{ss.push(cur);ks.push(col);cur=[]}});if(cur.length>1){ss.push(cur);ks.push(col)}o={s:ss,k:ks}}
  return rec._o=o||{s:[],k:[]}}
 function drawStrokes(cv,o,w,bgc){cv.width=cv.height=w;const x=cv.getContext('2d');x.clearRect(0,0,w,w);if(bgc){x.fillStyle=bgc;x.fillRect(0,0,w,w)}const pts=o.s.flat();if(!pts.length)return;let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;pts.forEach(p=>{x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0]);y0=Math.min(y0,p[1]);y1=Math.max(y1,p[1])});
- const sz=Math.max(x1-x0,y1-y0,1e-6),m=w*.13,k=(w-2*m)/sz,ox=(w-(x1-x0)*k)/2-x0*k,oy=(w-(y1-y0)*k)/2-y0*k;x.lineCap=x.lineJoin='round';x.lineWidth=Math.max(2,w*.014);
- o.s.forEach((s,i)=>{const c=COLS[o.k&&o.k[i]!=null?o.k[i]:4]||'#3d8bff';x.strokeStyle=x.fillStyle=c;x.shadowColor=c;x.shadowBlur=w*.018;if(s.length==1){x.beginPath();x.arc(s[0][0]*k+ox,s[0][1]*k+oy,x.lineWidth*.9,0,7);x.fill();return}x.beginPath();s.forEach((p,j)=>{const X=p[0]*k+ox,Y=p[1]*k+oy;j?x.lineTo(X,Y):x.moveTo(X,Y)});x.stroke()})}
-function mkTile(rec,cls){const d=document.createElement('div');d.className=cls;const i=document.createElement('div');i.className='gi';const c=document.createElement('canvas');i.append(c);d.append(i);drawStrokes(c,recStrokes(rec),260);return d}
+ const sz=Math.max(x1-x0,y1-y0,1e-6),m=w*.13,k=(w-2*m)/sz,ox=(w-(x1-x0)*k)/2-x0*k,oy=(w-(y1-y0)*k)/2-y0*k;x.lineCap=x.lineJoin='round';x.lineWidth=Math.max(1.6,w*.0075);
+ o.s.forEach((s,i)=>{const c=COLS[o.k&&o.k[i]!=null?o.k[i]:4]||'#3d8bff';x.strokeStyle=x.fillStyle=c;x.shadowColor=c;x.shadowBlur=w*.012;if(s.length==1){x.beginPath();x.arc(s[0][0]*k+ox,s[0][1]*k+oy,x.lineWidth*1.2,0,7);x.fill();return}x.beginPath();s.forEach((p,j)=>{const X=p[0]*k+ox,Y=p[1]*k+oy;j?x.lineTo(X,Y):x.moveTo(X,Y)});x.stroke()})}
+function mkTile(rec,cls){const d=document.createElement('div');d.className=cls;const i=document.createElement('div');i.className='gi';const c=document.createElement('canvas');i.append(c);d.append(i);drawStrokes(c,recStrokes(rec),320);return d}
 
 /* --- 放大卡片 --- */
 let ZC=null;
@@ -293,14 +319,22 @@ function lkToggle(rid,by){if(!R||!rid||by===R.id)return;if(MYLK[rid])delete MYLK
 function lkTog(){const r=LAST;if(r)lkToggle(r.rid,r.by)}
 
 /* --- 頒獎台原圖展示 --- */
-function finGallery(rows){const old=$('gal');if(old)old.remove();if(!R||!GL.length)return;const box=document.createElement('div');box.id='gal';const h=document.createElement('h3');h.textContent='本局原圖';box.append(h);
+let LKR=null;
+function lkBoard(groups){const au=groups.filter(q=>q.rs.length);if(!au.length)return null;const cap=Math.min(5,au.length),RH=34;
+ const box=document.createElement('div');box.id='lkr';box.style.height=(30+cap*RH+16)+'px';const h=document.createElement('div');h.className='lkh';h.innerHTML=IC.up+'<span>按讚排行</span>';box.append(h);
+ const body=document.createElement('div');body.className='lkb2';body.style.height=(cap*RH)+'px';box.append(body);const emp=document.createElement('div');emp.className='lke';emp.textContent='還沒有人被按讚';body.append(emp);
+ au.forEach(q=>{const r=document.createElement('div');r.className='lkrow';r.innerHTML='<span class="lkn"></span><span class="lkt"><i></i></span><span class="lkc"></span>';r.querySelector('.lkn').textContent=q.n;r.style.transform='translateY('+(cap*RH)+'px)';q.row=r;body.append(r)});
+ LKR={au,cap,RH,emp};return box}
+function lkrUpdate(){if(!LKR||!R)return;const{au,cap,RH,emp}=LKR,tot=au.map((q,i)=>({q,i,n:q.rs.reduce((s,x)=>s+likeN(x.rid),0)})),live=tot.filter(x=>x.n>0).sort((a,b)=>b.n-a.n||a.i-b.i),mx=live.length?live[0].n:1;emp.style.opacity=live.length?0:1;
+ tot.forEach(x=>{const r=x.q.row,k=live.indexOf(x);if(k>=0&&k<cap){const c=r.querySelector('.lkc'),tx='×'+x.n;r.className='lkrow r'+Math.min(k,3);r.style.opacity=1;r.style.transform='translateY('+k*RH+'px)';r.querySelector('i').style.width=Math.max(8,x.n/mx*100)+'%';if(c.textContent!==tx){const up=c.textContent&&+c.textContent.slice(1)<x.n;c.textContent=tx;if(up)c.animate([{transform:'scale(1.5)'},{transform:'scale(1)'}],{duration:300,easing:'ease-out'})}}else{r.style.opacity=0;r.style.transform='translateY('+(cap*RH)+'px)'}})}
+function finGallery(rows){const old=$('gal');if(old)old.remove();const ol=$('lkr');if(ol)ol.remove();LKR=null;if(!R||!GL.length)return;const box=document.createElement('div');box.id='gal';const h=document.createElement('h3');h.textContent='本局原圖';box.append(h);
  const nm0=s=>String(s).replace(/（.*$/,'');const used=new Set(),groups=[];
  rows.forEach(r=>{const rs=GL.filter(x=>!used.has(x)&&(x.by===r.id||nm0(x.bn)===nm0(r.n)));rs.forEach(x=>used.add(x));if(rs.length)groups.push({n:nm0(r.n),rs})});
  GL.filter(x=>!used.has(x)).forEach(x=>{let gp=groups.find(q=>q.n===nm0(x.bn));if(!gp)groups.push(gp={n:nm0(x.bn),rs:[]});gp.rs.push(x)});
- groups.forEach(gp=>{const s=document.createElement('div');const n=document.createElement('div');n.className='gn';n.textContent=gp.n;const gr=document.createElement('div');gr.className='gg';
+ const lb=lkBoard(groups);groups.forEach(gp=>{const s=document.createElement('div');const n=document.createElement('div');n.className='gn';n.textContent=gp.n;const gr=document.createElement('div');gr.className='gg';
   gp.rs.forEach(rec=>{const t=mkTile(rec,'gt');const tk=document.createElement('span');tk.className='tk';tk.innerHTML=IC.up;t.querySelector('.gi').append(tk);const l=document.createElement('div');l.className='gl';l.textContent=rec.ans;const v=document.createElement('div');v.className='gv';v.innerHTML=stars(rec.lv);t.append(l,v);t.dataset.rid=rec.rid;t.onclick=()=>zoomOpen(t.querySelector('.gi'),{mode:'fin',rec,lv:rec.lv,title:rec.ans,fm:rec.fm});gr.append(t)});
-  s.append(n,gr);box.append(s)});fin.append(box);finRefresh()}
-function finRefresh(){if(!R)return;document.querySelectorAll('#gal .gt').forEach(t=>{const rec=GL.find(x=>x.rid===t.dataset.rid);if(!rec)return;t.querySelector('.tk').classList.toggle('on',likeN(rec.rid)>0)});zoomRefresh()}
+  s.append(n,gr);box.append(s)});if(lb)fin.append(lb);fin.append(box);finRefresh()}
+function finRefresh(){if(!R)return;document.querySelectorAll('#gal .gt').forEach(t=>{const rec=GL.find(x=>x.rid===t.dataset.rid);if(!rec)return;t.querySelector('.tk').classList.toggle('on',likeN(rec.rid)>0)});lkrUpdate();zoomRefresh()}
 
 /* --- 儲存倉庫資料 --- */
 let VT={};try{VT=JSON.parse(localStorage.getItem('fv_vault_v1')||'{}')||{}}catch(e){VT={}}
@@ -331,7 +365,7 @@ function vtRender(){if(vault.hidden)return;vault.textContent='';const h=document
  vault.append(h);const body=document.createElement('div');body.className='vbody';vault.append(body);
  if(VS&&VM=='main')body.append(vtSyncBox());
  const list=VM=='main'?vLive():vTrash();
- if(!list.length){const e=document.createElement('div');e.className='vemp';e.textContent=VM=='main'?'還沒有儲存的圖。在頒獎台點開一張原圖，按書籤圖示就會存到這裡。':'垃圾桶是空的';body.append(e);return}
+ if(!list.length){const e=document.createElement('div');e.className='vemp';e.textContent=VM=='main'?'還沒有儲存的圖。在頒獎台點開一張原圖，按書籤圖示就會存到這裡。':'在倉庫長按任何一張圖後進行刪除';body.append(e);return}
  const grid=its=>{const gr=document.createElement('div');gr.className='vgg';its.forEach(it=>gr.append(vtTile(it)));return gr};
  if(VM=='main'&&VG){const map=new Map();list.forEach(i=>{const k=i.au||'（未填作者）';if(!map.has(k))map.set(k,[]);map.get(k).push(i)});map.forEach((its,k)=>{const n=document.createElement('div');n.className='gn';n.textContent=k;body.append(n,grid(its))})}else body.append(grid(list))}
 function vtTile(it){const t=mkTile(it,'vt');t.dataset.id=it.id;const l=document.createElement('div');l.className='gl';l.textContent=it.n;t.append(l);
@@ -419,12 +453,33 @@ function likeBanner(title,n){
   S.t2=setTimeout(()=>{S.ph=3;el.animate([{transform:'none',opacity:1},{transform:'translate(30vw,-130px) rotate(540deg) scale(.2)',opacity:0}],{duration:650,fill:'forwards',easing:'cubic-bezier(.5,0,.9,.4)'});S.t2=setTimeout(S.kill,680)},470)};
  S.restart=()=>{clearTimeout(S.t);S.t=setTimeout(out,hold)};
  S.t=setTimeout(()=>{S.ph=1;S.restart()},520)}
+let ABN=null;
+function ansBanner(nm,ans,pt){if(ABN)ABN.kill();const st=$('stage'),el=document.createElement('div'),z=document.createElement('div');el.className='abn';z.className='abz';
+ el.innerHTML='<div class="abw"><svg viewBox="0 0 400 108" preserveAspectRatio="none"><defs><linearGradient id="abga" x1="0" x2="1"><stop offset="0" stop-color="#19f3ff"/><stop offset="1" stop-color="#ffd84a"/></linearGradient><linearGradient id="abgs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><polygon points="0,18 400,9 400,99 0,90" fill="rgba(9,11,34,.82)"/><polygon points="0,18 400,9 400,99 0,90" fill="url(#abgs)"/><line x1="0" y1="18" x2="400" y2="9" stroke="url(#abga)" stroke-width="3" vector-effect="non-scaling-stroke"/><line x1="0" y1="90" x2="400" y2="99" stroke="url(#abga)" stroke-width="3" vector-effect="non-scaling-stroke"/></svg><div class="abs"><i class="abh"></i></div></div><div class="abw2"><div class="abt"><span class="abm"></span><span class="aba"></span><span class="abp"></span></div></div>';
+ const wrap=el.children[0],w2=el.children[1],hi=el.querySelector('.abh'),t=el.querySelector('.abt'),am=t.children[0],aa=t.children[1],ap=t.children[2];
+ am.textContent=nm;aa.textContent=ans;ap.textContent='+'+pt;st.append(el,z);
+ {let f=64,m=28,p=30;const set=()=>{aa.style.fontSize=f+'px';am.style.fontSize=m+'px';ap.style.fontSize=p+'px'};set();const w=()=>am.offsetWidth+aa.offsetWidth+ap.offsetWidth+24,av=()=>t.clientWidth*.9;for(let i=0;i<40&&w()>av();i++){if(f>34)f-=2;else if(m>16||p>20){m=Math.max(16,m-1);p=Math.max(20,p-1)}else break;set()}}
+ const S=ABN={kill(){clearTimeout(S.t);clearTimeout(S.t2);clearTimeout(S.t3);el.remove();z.remove();if(ABN===S)ABN=null}};
+ const A=(e,k,o)=>e.animate(k,Object.assign({fill:'both'},o)),E='cubic-bezier(.08,.9,.2,1)';
+ A(wrap,[{clipPath:'inset(0 100% 0 0)'},{clipPath:'inset(0 0% 0 0)'}],{duration:300,easing:E});
+ A(w2,[{clipPath:'inset(-90px 100% -30px 0)'},{clipPath:'inset(-90px 0% -30px 0)'}],{duration:300,easing:E});
+ A(am,[{opacity:0,transform:'translateX(-24px) skewX(-10deg)'},{opacity:1,transform:'skewX(-10deg)'}],{duration:260,delay:190,easing:'ease-out'});
+ A(aa,[{opacity:0,transform:'translateY(-15px) scale(.5)'},{opacity:1,transform:'translateY(-15px) scale(1.15)',offset:.62},{opacity:1,transform:'translateY(-15px) scale(1)'}],{duration:440,delay:170,easing:'ease-out'});
+ A(ap,[{opacity:0,transform:'translateX(28px) scale(.7) skewX(-10deg)'},{opacity:1,transform:'skewX(-10deg)'}],{duration:320,delay:260,easing:'ease-out'});
+ A(hi,[{transform:'translateX(-150%) skewX(-20deg)'},{transform:'translateX(480%) skewX(-20deg)'}],{duration:700,delay:260,easing:'ease-in-out'});
+ A(hi,[{transform:'translateX(-150%) skewX(-20deg)'},{transform:'translateX(480%) skewX(-20deg)'}],{duration:650,delay:1650,easing:'ease-in-out'});
+ const C=['#ff3b4e','#ffe83d','#47ff8a','#19f3ff','#c04dff','#ff9a2e','#ff3df0'];
+ for(let i=0;i<18;i++){const r=document.createElement('i');r.className='abr';r.style.left=(6+Math.random()*88)+'%';r.style.top=Math.random()<.5?'16%':'72%';r.style.background=C[i%C.length];z.append(r);
+  const D=210+Math.random()*130,sw=14+Math.random()*22,ph=Math.random()*6,rot=(Math.random()-.5)*900,kf=[];for(let s=0;s<=6;s++){const f=s/6;kf.push({offset:f,opacity:f<.78?1:1-(f-.78)/.22,transform:'translate('+Math.sin(ph+f*7)*sw+'px,'+(D*f*f*.35+D*f*.65)+'px) rotate('+rot*f+'deg)'})}
+  r.animate(kf,{duration:1700+Math.random()*800,delay:280+Math.random()*280,easing:'linear',fill:'forwards'})}
+ S.t=setTimeout(()=>{const o={duration:340,easing:'cubic-bezier(.7,0,.9,.4)'};A(wrap,[{clipPath:'inset(0 0% 0 0)'},{clipPath:'inset(0 0 0 100%)'}],o);A(w2,[{clipPath:'inset(-90px 0% -30px 0)'},{clipPath:'inset(-90px 0 -30px 100%)'}],o);S.t2=setTimeout(()=>el.remove(),380)},2350);
+ S.t3=setTimeout(S.kill,3500)}
 function finish(ok,nm,who){
  if(S.mode!='run')return;
  const p=ok?pts():0;S.mode='end';if(S.solo){SOLO.n++;if(ok)SOLO.pts+=p}
  const pd=(S.own&&R&&g('md')=='turn')?Math.round(p*Math.max(0,1-.2*(S.hn||0))):p;if(ok&&(S.solo||(S.own&&(g('md')!='bank'||who===me())))){sc+=pd;R&&R.presence({sc})}
  if(R&&S.own){const og=S.eg.flatMap(V=>V.map(v=>[+v.x.toFixed(3),+v.y.toFixed(3),+v.c])),lv=Math.round((S.mult-1)/.2);if(R&&S.own&&g('md')=='turn')addRec({rid:S.rid,ans:S.ans,lv,by:R.id,bn:ME,og,fm:S.fm||''});R.emit('r',{rid:S.rid,ok,who,nm,pts:p,ans:S.ans,lv,fm:S.fm||'',og}).catch(()=>{})}
- ban(ok?`答案：${S.ans}　${nm} 猜中，得 ${p} 分`+(pd!==p?`（你提示了 ${S.hn} 次，出題者得 ${pd} 分）`:''):(R||S.solo?`沒人猜中，答案是：${S.ans}`:`演示結束，題目是：${S.ans}`));ui();if(R&&HOST&&g('md')=='turn')tAfter();
+ if(ok){ban(pd!==p?`（你提示了 ${S.hn} 次，出題者得 ${pd} 分）`:'');ansBanner(nm,S.ans,p)}else ban(R||S.solo?`沒人猜中，答案是：${S.ans}`:`演示結束，題目是：${S.ans}`);ui();if(R&&HOST&&g('md')=='turn')tAfter();
 }
 const cols=(tx,ok)=>[...tx].map(ch=>ok||S.ans.includes(ch)?1:0).join('');
 function addG(d){const l=$('log'),r=document.createElement('div'),b=document.createElement('b');b.textContent=d.nm+'：';r.append(b);[...d.tx].forEach((ch,i)=>{const s=document.createElement('span');s.className=d.cs[i]=='1'?'ok':d.cs[i]=='2'?'wh':d.cs[i]=='3'?'mt':'no';s.textContent=d.h&&d.nm!==ME?'*':ch;r.append(s)});l.append(r);if(l.children.length<=1)AS=true;if(AS)l.scrollTop=l.scrollHeight}
@@ -434,14 +489,14 @@ function flash(t){$('lm').textContent=t;const c=$('ctl').querySelector('.msg');i
 const me=()=>R&&(R.peers().find(p=>p.isMe)||{}).peer;
 
 function ui(){
- const c=$('ctl'),m=S.mode;let h='';$('bx').hidden=!!(R&&HOST);$('mnb').hidden=!(R&&HOST);if(!(R&&HOST))$('mnu').hidden=true;$('bar').style.visibility=m=='run'?'visible':'hidden';$('setbox').style.display=R?'':'none';if(!R)$('ti').textContent=({guess:'猜題練習',pick:'我來出題',mk:'製作圖庫'})[S.sm]||'單機練習';updSol();if(m!='idle')$('prog').hidden=true;$('ldb').style.display=m=='run'?'':'none';if(!R)$('bx').textContent=m=='idle'?'離開':'返回';if(R&&PH=='lobby'){c.innerHTML=HOST?'<button data-a="begin" class="fab">開始遊戲</button><small>先調整設置，再按右下角的「開始遊戲」。</small>':'<small>等待房主開始遊戲…</small>';return}
+ const c=$('ctl'),m=S.mode;let h='';$('bx').hidden=!!(R&&HOST);$('mnb').hidden=!(R&&HOST);{const pl=!!(R&&HOST&&PH=='play');$('bsh').hidden=!R||pl;$('bst').hidden=!pl;$('mnu').querySelector('[data-m=share]').hidden=!pl}if(!(R&&HOST))$('mnu').hidden=true;$('bar').style.visibility=m=='run'?'visible':'hidden';$('setbox').style.display=R?'':'none';if(!R)$('ti').textContent=({guess:'猜題練習',pick:'我來出題',mk:'製作圖庫'})[S.sm]||'單機練習';updSol();if(m!='idle')$('prog').hidden=true;$('ldb').style.display=m=='run'?'':'none';if(!R)$('bx').textContent=m=='idle'?'離開':'返回';if(R&&PH=='lobby'){c.innerHTML=HOST?'<button data-a="begin" class="fab">開始遊戲</button><small>先調整設置，再按右下角的「開始遊戲」。</small>':'<small>等待房主開始遊戲…</small>';return}
  pad.hidden=m!='setup';cv.hidden=m=='setup';ban(m=='end'?$('ban').textContent:(m=='pick'||m=='idle'?PBN:''));
  if(m=='idle'||m=='end')h=!R?soloBtns(m):'';
  else if(m=='pick')h=`<div class="row"><input id="tp" placeholder="${S.maker?'圖的名稱（必填）':'自訂題目（空白＝隨機）'}" maxlength="10">${S.maker||!R||g('md')=='turn'?'':'<select id="src"><option value="d">手繪</option><option value="l">圖庫</option></select>'}<button data-a="ok">確定</button></div>${R&&g('md')=='turn'?TPS:''}`;
  else if(m=='setup')h=`<div class="row">題目：${R||S.maker?`<b>${S.item.n}</b>`+(R?' '+stars(S.item.lv|0)+((S.rnd&&(S.sk||0)<2)?'<button class="g" data-a="skip">跳過（剩 '+(2-(S.sk||0))+' 次）</button>':''):''):`${S.editing?`<input id="rtv" value="${S.item.n.replace(/"/g,'&quot;')}" maxlength="10" style="width:9em"><button data-a="rtok">確定</button><button class="g" data-a="rtx">取消</button>`:`<b data-a="rt" style="border-bottom:1px dashed var(--c1)">${S.item.n}</b><button class="g" data-a="skip">跳過</button><span style="color:var(--mu);font-size:calc(12px*var(--fs))">點題目可自訂</span>`}`}</div><div class="row">${COLS.slice(0,10).map((x,i)=>`<button class="sw${i==ci?' on':''}" data-a="col" data-i="${i}" style="background:${x}"></button>`).join('')}</div><div class="row"><button class="g" data-a="clr" title="清除" aria-label="清除">🗑</button><button class="g" data-a="undo" title="撤銷" aria-label="撤銷">↶</button>${S.maker?'<button class="g" data-a="cp">複製成題庫格式</button><button class="g" data-a="ref">查詢</button>':''}<button data-a="go">開始演示</button></div><div class="row" style="color:var(--mu)"><span id="rs"></span></div>`;
  else if(m=='run'&&S.own&&!S.solo&&!S.bank)h=(S.vm?'<div class="row"><button data-a="rw">⏪ 倒退</button><button data-a="pp">⏯ 暫停</button><button data-a="ff">⏩ 快進</button></div>':'')+(g('adv')=='m'?'<button data-a="up">加一階</button> <button class="'+(S.au?'ring':'g')+'" data-a="au">自動加階</button> ':'')+'<div class="row">'+(R?'':'<button class="g" data-a="end">結束</button>')+(S.vm?CPI:'')+'</div>'+(S.vm?RNH:'')+(R?(g('md')=='turn'?hintRow():chatRow()):'');
  else if(m=='run')h=R?'<div class="gr"><input id="gi" placeholder="輸入你的猜測" maxlength="12" autocomplete="off"><button data-a="gs">猜</button></div>':'<div class="row"><input id="gi" placeholder="輸入你的猜測" maxlength="12"><button data-a="gs">猜</button>'+(S.solo?'<button class="g" data-a="end">放棄</button>':'')+'</div>';
- c.innerHTML=h+(R&&HOST&&PH=='play'?'<div class="row" style="justify-content:flex-end">'+(LAST&&LAST.fm&&g('md')=='turn'&&S.mode!='run'?'<button class="g" data-a="cfm">複製格式</button>':'')+hostBtn()+'</div>':'')+'<div class="msg" style="color:#ffe83d;min-height:1.2em"></div>';
+ c.innerHTML=h+(R&&HOST&&PH=='play'?'<div class="row" style="justify-content:flex-end">'+hostBtn()+'</div>':'')+'<div class="msg" style="color:#ffe83d;min-height:1.2em"></div>';
  if(m=='setup')drawPad();
  showHt();updTps();likeUI();swShow();
 }
@@ -452,7 +507,7 @@ const capAdd=l=>l|0;
 const capN=()=>{if(!R||g('md')=='bank')return Infinity;const c=+g('cap');return c>0?c+capAdd(S.item?S.item.lv|0:0):Infinity};
 const spd=()=>updSol();
 const act={
- cp(){return cpy()},cfm(){if(LAST&&LAST.fm)copyTx(LAST.fm)},ref(){showRef()},
+ cp(){return cpy()},cfm(){if(LAST&&LAST.fm)copyTx(fmLow(LAST.fm))},ref(){showRef()},
  begin(){finHide();GL=[];LAST=null;MYLK={};lkLast={};R.presence({lk:null});sc=0;R.presence({sc:0});R.zeroOff&&R.zeroOff();R.emit('k',{rs:1}).catch(()=>{});PH='play';pub();applyPh();if(g('md')=='bank'){bkReset();bank()}else tGame()},nx(){if(g('md')=='bank')bank();else{TQ&&clearTimeout(TQ.t);tNext()}},ng(){if(g('md')=='bank'){bkReset();R.emit('k',{sbx:1}).catch(()=>{});$('ov').hidden=true;bank()}else tGame()},au(){S.au=!S.au;ui()},stop(){TQ&&clearTimeout(TQ.t);TQ=null;$('hint').textContent='';{const l=R.peers().filter(p=>!p.presence.off||(p.presence.sc|0)>0).map(p=>({id:p.peer,n:(p.presence.nm||'玩家')+(p.presence.off?'（離線）':''),s:p.presence.sc|0}));l.sort((a,b)=>b.s-a.s);const arr=l.map(r=>[r.n,r.s,r.id]);R.emit('k',{fin:arr}).catch(()=>{});setTimeout(()=>showFin(arr,1),0)}PH='lobby';pub();applyPh()},
  solo(){$('log').innerHTML='';S.solo=1;S.maker=0;S.sm='guess';const it=draw('solo',ITEMS);S.item=it;start(it.s().map((p,i)=>({p:p.slice(),c:it.k&&it.k[i]!=null?it.k[i]:11+i%5})),it)},
  rt(){S.editing=1;ui();const i=$('rtv');if(i)i.focus()},rtok(){const v=$('rtv').value.trim();if(v)S.item={n:v,al:[],lv:S.item.lv|0};S.editing=0;ui()},rtx(){S.editing=0;ui()},skip(){S.editing=0;if(R){if(!S.rnd||(S.sk||0)>=2)return;S.sk=(S.sk||0)+1;const it=draw('turn',poolBy([...ITEMS,...WORDS]).filter(i=>i.n!==S.item.n));if(it){S.item=it;if(+g('dt')>0)R.emit('k',{dt:{s:Math.round(+g('dt')*(1+.5*(S.item.lv|0)))}}).catch(()=>{})}}else S.item=draw('solo',[...ITEMS,...WORDS].filter(i=>i.n!==S.item.n))||S.item;ui()},
@@ -482,8 +537,10 @@ $('ctl').addEventListener('click',e=>{const b=e.target.closest('[data-a]');b&&ac
 $('ctl').addEventListener('keydown',e=>{if(e.key=='Enter'&&e.target.id=='hti')act.ht();else if(e.key=='Enter'&&e.target.id=='gi')act.gs();else if(e.key=='Enter'&&e.target.id=='rtv')act.rtok()});
 
 function rdp(p,e){if(p.length<3)return p;let m=0,k=0;const a=p[0],b=p[p.length-1],dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy)||1;for(let i=1;i<p.length-1;i++){const d=Math.abs(dy*(p[i][0]-a[0])-dx*(p[i][1]-a[1]))/L;if(d>m){m=d;k=i}}return m>e?rdp(p.slice(0,k+1),e).slice(0,-1).concat(rdp(p.slice(k),e)):[a,b]}
-function fmtTx(st,nm,al,lv,ct){const ps=st.flatMap(t=>t.p),xs=ps.map(p=>p[0]),ys=ps.map(p=>p[1]),x0=Math.min(...xs),y0=Math.min(...ys),k=100/Math.max(Math.max(...xs)-x0,Math.max(...ys)-y0,1);
- const o={n:nm,al,lv,c:ct,k:st.map(t=>t.c),s:st.map(t=>rdp(t.p.map(p=>[(p[0]-x0)*k,(p[1]-y0)*k]),1.2).map(p=>[Math.round(p[0]),Math.round(p[1])]))};return JSON.stringify(o)+','}
+function fmtTx(st,nm,al,lv,ct,hi){const ps=st.flatMap(t=>t.p),xs=ps.map(p=>p[0]),ys=ps.map(p=>p[1]),x0=Math.min(...xs),y0=Math.min(...ys),k=100/Math.max(Math.max(...xs)-x0,Math.max(...ys)-y0,1);
+ const mk=e=>JSON.stringify({n:nm,al,lv,c:ct,k:st.map(t=>t.c),s:st.map(t=>{const r=rdp(t.p.map(p=>[(p[0]-x0)*k,(p[1]-y0)*k]),e);return hi?r.map(p=>[Math.round(p[0]*10)/10,Math.round(p[1]*10)/10]):r.map(p=>[Math.round(p[0]),Math.round(p[1])])})})+',';
+ if(!hi)return mk(1.2);let e=.2,s=mk(e);for(let i=0;i<9&&s.length>26000;i++){e*=1.6;s=mk(e)}return s}
+function fmLow(fm){try{const o=JSON.parse(String(fm).replace(/,\s*$/,''));o.s=o.s.map(s=>rdp(s,1.2).map(p=>[Math.round(p[0]),Math.round(p[1])]));return JSON.stringify(o)+','}catch(e){return fm}}
 function copyTx(tx){const ta=$('cpt'),pp=$('cpp');ta.value=tx;
  const done=()=>{pp.hidden=true;flash('已複製（'+tx.length+' 字），貼到 shapes.json 的 [ 後面一行')},fb=()=>{pp.hidden=false;ta.focus();ta.select();let ok=0;try{ok=document.execCommand('copy')}catch(e){}if(ok)done();else flash('自動複製失敗，請在框內長按全選複製，框會一直留著')};
  try{navigator.clipboard.writeText(tx).then(done,fb)}catch(e){fb()}}
@@ -611,7 +668,7 @@ const shuf=a=>{for(let i=a.length;i>1;){const j=Math.floor(Math.random()*i--);[a
 const isOn=id=>{const p=R&&R.peers().find(p=>p.peer===id);return !!p&&!p.presence.off};
 const oo=document.createElement('div');oo.id='oo';oo.hidden=true;document.body.append(oo);
 const fin=document.createElement('div');fin.id='fin';fin.hidden=true;const fc=document.createElement('canvas');fc.id='fc';fc.hidden=true;document.body.append(fin,fc);let finRaf=0;
-function finHide(){zoomClose(true);fin.hidden=true;fc.hidden=true;cancelAnimationFrame(finRaf)}
+function finHide(){zoomClose(true);LKR=null;fin.hidden=true;fc.hidden=true;cancelAnimationFrame(finRaf)}
 function showFin(list,host){fin.textContent='';const h=document.createElement('h2');h.textContent='🎉 本局結算 🎉';fin.append(h);
  const rows=list.map((r,i)=>({n:String(r[0]).slice(0,8),s:r[1],id:r[2]}));rows.forEach((r,i)=>{r.rk=i&&rows[i-1].s===r.s?rows[i-1].rk:i+1});
  const pod=document.createElement('div');pod.className='pod';const med={1:'🥇',2:'🥈',3:'🥉'};
@@ -672,7 +729,7 @@ async function enter(room,host){
    const rn='fg-'+(room.trim().toLowerCase().replace(/[.$#\[\]\/\s]/g,'_').slice(0,40)||'room1');if(host&&await rm.exists(rn)){$('lm').textContent='房間已存在，請換一個名稱，或按「加入房間」';return}if(!host&&!(await rm.exists(rn,true))){$('lm').textContent='找不到這個房間（還沒建立，或房主已解散）';return}R=await rm.join(rn,!!host);let CL={};if(!host){CL=await R.claim(ME);if(CL.taken){try{R.leave()}catch(e){}R=null;$('lm').textContent='此名稱已存在，請換一個暱稱再加入';return}}
    PH='lobby';HOST=host?1:0;sc=CL.old?(CL.sc|0):0;MYLK=(CL.old&&CL.lk)||{};R.presence(CL.old?{nm:ME,sc,from:CL.old,lk:CL.lk||null}:{nm:ME,sc:0});if(CL.old)R.retire(CL.olds);pub();R.onPeers(players);
    R.on('st',m=>{const d0=m.data;if(HOST&&TQ&&d0&&d0.rid&&m.peer===TQ.cur&&d0.rid!==TQ.rid){TQ.rid=d0.rid;TQ.demo=1;TQ.dEnd=Date.now()-(d0.el||0)+CELLS*(d0.T||4)*1000;if(TQ.ow){TQ.ow=null;ooHide()}}if(m.isMe||S.own)return;const d=m.data;if(!d||!d.c||!engOk(m.peer))return;const gc=Array.isArray(d.c[0]&&d.c[0][0])?d.c:[d.c],gf=Array.isArray(d.fl)?d.fl:[d.fl];
-    if(d.rid!==S.rid){S={mode:'run',own:0,rid:d.rid,fl:gf,T:d.T,mx:d.mx,mult:d.m,sg:d.sg,rr:d.rr,bb:d.bb};PBN='';setHint(d.h||'',d.hl,d.hd);if(g('md')=='turn'&&navigator.vibrate)navigator.vibrate(250);shown=[];last=-1;$('log').innerHTML='';ban('');ui()}
+    if(d.rid!==S.rid){S={mode:'run',own:0,rid:d.rid,fl:gf,T:d.T,mx:d.mx,mult:d.m,sg:d.sg,rr:d.rr,bb:d.bb};PBN='';setHint(d.h||'',d.hl,d.hd);if(g('md')=='turn'&&navigator.vibrate)navigator.vibrate(250);if(ABN)ABN.kill();shown=[];last=-1;$('log').innerHTML='';ban('');ui()}
     const t0=Date.now()-d.el;if(!S.t0||Math.abs(t0-S.t0)>400)S.t0=t0;
     if(d.at&&d.cl&&d.c0&&d.sz){S.at=1;S.cl=d.cl;S.c0=d.c0;S.szr=d.sz;if(d.ex&&!S.eg)S.eg=d.ex.map(f=>{const V=[];for(let i=0;i+2<f.length;i+=3)V.push({x:f[i],y:f[i+1],c:f[i+2]});return V});const n=stOf(Math.floor((Date.now()-S.t0)/(S.T*1000))+1);if(S.n!==n||!S.cc)gSet(n)}
     else if(d.n!==S.n){S.n=d.n;S.full=0;if(S.n>=S.mx-2&&d.ex){S.eg=d.ex.map(f=>{const V=[];for(let i=0;i+2<f.length;i+=3)V.push({x:f[i],y:f[i+1],c:f[i+2]});return V});S.exE=d.ex0;S.cc=S.eg.map(()=>[[0,0,0]]);cur=S.eg.map(exCurve)}else{S.exE=null;S.cc=gc;cur=gc.map((c,gi)=>curve(c,S.fl[gi]))}}
@@ -683,15 +740,15 @@ async function enter(room,host){
    R.on('k',m=>{const q=m.data;if(q&&(q.cd!=null||q.ct||q.pk||q.nd||q.sb||q.sbx||q.bye||q.host||q.to||q.rs||q.fin||q.finw)&&m.peer!==hostId())return;if(q&&q.finw){const w=$('finw');if(w)w.hidden=false;return}if(q&&q.fin){if(!m.isMe){cdHide();ooHide();showFin(q.fin)}return}if(q&&q.rs){finHide();GL=[];LAST=null;MYLK={};lkLast={};R.presence({lk:null});if(!m.isMe){sc=0;R.presence({sc:0})}return}if(q&&q.dt){if(m.peer===curD())DT={end:Date.now()+q.dt.s*1000,total:q.dt.s*1000};return}if(q&&q.dsk){if(HOST&&g('md')=='turn'&&TQ&&m.peer===curD()){TQ.lm='時間到，'+nmf(m.peer)+' 沒有完成作畫，換下一位';TQ.cur=null;clearTimeout(TQ.t);tNext()}return}if(q&&q.pg){if(m.peer===curD()&&!m.isMe){PBN='';ban('');showProg(q.pg)}return}if(q&&q.ct){cdShow(q.ct.s,q.ct.l);return}if(q&&q.cd!=null&&!m.isMe){$('hint').textContent='';ban(q.cd?'即將開始 '+q.cd:'');if(!q.cd)cdHide();return}if(q&&q.bye&&!HOST){exitRoom('房主已離開');return}if(q&&q.host){if(q.host===R.id){if(HC)for(const k in HC){const e=$(k);if(e){if(e.type=='checkbox')e.checked=!!HC[k];else e.value=HC[k]}}HOST=1;HC=null;TQ=q.tq||null;SH=1;R.presence({host:1,ph:PH,cfg:cfgs(),cur:TQ?TQ.cur:null,mutes:MU});applyPh();toast('已成為房主',1000)}else{if(HOST){TQ&&clearTimeout(TQ.t);TQ=null;S={mode:'idle'};shown=[];HOST=0;R.presence({host:0,cfg:null})}toast('房主已轉讓',1000);applyPh()}return}if(q&&q.pk){cdHide();spin(q.pk.ids,q.pk.n);return}if(q&&q.nd){cdHide();turn(q.nd,q.lf,q.lm);return}if(q&&q.sb){cdHide();PBN='';sbShow(q.sb);return}if(q&&q.sbx){$('ov').hidden=true;return}if(q&&q.to===R.id){exitRoom('已被房主剔除');return}});
    R.on('r',m=>{const d=m.data;if(m.isMe||S.own||!d||d.rid!==S.rid||S.mode!='run'||!engOk(m.peer))return;S.mode='end';S.og=(d.og||[]).map(v=>({x:v[0],y:v[1],c:v[2]}));if(g('md')=='turn')addRec({rid:d.rid,ans:String(d.ans||''),lv:d.lv|0,by:m.peer,bn:nmf(m.peer),og:d.og||[],fm:String(d.fm||'')});
     if(d.ok&&d.who===me()){sc+=d.pts;R.presence({sc})}
-    markUsed('turn',d.ans);ban(d.ok?`答案：${d.ans}　${d.nm} 猜中，得 ${d.pts} 分`:`沒人猜中，答案是：${d.ans}`);ui();if(HOST&&g('md')=='turn')tAfter()});
+    markUsed('turn',d.ans);if(d.ok){ban('');ansBanner(d.nm,d.ans,d.pts)}else ban(`沒人猜中，答案是：${d.ans}`);ui();if(HOST&&g('md')=='turn')tAfter()});
   }catch(e){R=null;$('lm').textContent='無法加入房間，請確認網路後再試，或先單機練習';return}
  }
  $('lobby').hidden=true;$('game').hidden=false;try{history.pushState({fg:1},'')}catch(e){}$('ti').textContent=room?'房間 '+room:'單機練習';$('bsh').hidden=!room;
  $('dsp').value=room?'all':'none';ldInit();size();players();applyPh();
 }
 const needNm=cb=>{if(g('nm').trim())return cb();const n='玩家'+Math.floor(Math.random()*90+10);askc('你還沒有輸入暱稱，自動給你的暱稱是「'+n+'」。要用這個暱稱進入房間嗎？',()=>{$('nm').value=n;cb()})};
-$('mnb').onclick=e=>{e.stopPropagation();const m=$('mnu');m.hidden=!m.hidden;m.querySelector('[data-m=stop]').hidden=PH!='play'};
-$('mnu').onclick=e=>{const b=e.target.closest('button');if(!b)return;$('mnu').hidden=true;if(b.dataset.m=='stop'){if(R&&HOST&&PH=='play')act.stop()}else $('bx').onclick()};
+$('mnb').onclick=e=>{e.stopPropagation();const m=$('mnu');m.hidden=!m.hidden};
+$('mnu').onclick=e=>{const b=e.target.closest('button');if(!b)return;$('mnu').hidden=true;if(b.dataset.m=='share')$('bsh').onclick();else $('bx').onclick()};$('bst').onclick=()=>{if(R&&HOST&&PH=='play')act.stop()};
 document.addEventListener('click',e=>{if(!$('mnu').hidden&&!e.target.closest('#mnu')&&e.target!==$('mnb'))$('mnu').hidden=true});
 $('bj').onclick=()=>{const r=g('rm').trim();r?needNm(()=>enter(r)):($('lm').textContent='請輸入房間名稱')};
 $('bs').onclick=()=>enter(null);
@@ -707,7 +764,7 @@ let FSD=0;const STANDALONE=()=>matchMedia('(display-mode: fullscreen)').matches|
  {let cum=0,i=0;for(let s=0;s<14;s++){const tg=1-.5*Math.pow(.585,s);while(i<rest.length&&cum/tot<tg){cum+=rest[i][3]**2;i++}let n=Math.max(2,i+(i%2));if(sizes.length)n=Math.max(n,sizes[sizes.length-1]+2);n=Math.min(n,rest.length);if(sizes.length&&n===sizes[sizes.length-1])break;sizes.push(n)}}
  const curve=n=>{const L=[c0,...rest.slice(0,n)];return Array.from({length:Mx},(_,j)=>{const t=j/Mx;let px=0,py=0;for(const[k,re,im]of L){const a=2*Math.PI*k*t;px+=re*Math.cos(a)-im*Math.sin(a);py+=re*Math.sin(a)+im*Math.cos(a)}return[px,py]})};
  const T=3000,t0=performance.now();let stage=-1,cur=[],shown=[],last=-1;
- const f=now=>{if(!$('lobby').hidden&&!document.hidden&&matchMedia('(min-width:900px)').matches){const W=cv.width,H=cv.height,u=W*.36,e=now-t0,cyc=Math.floor(e/T),st=cyc%sizes.length,t=(e%T)/T;
+ const f=now=>{if(!$('lobby').hidden&&!document.hidden&&cv.offsetParent){const W=cv.width,H=cv.height,u=W*.36,e=now-t0,cyc=Math.floor(e/T),st=cyc%sizes.length,t=(e%T)/T;
   if(st!==stage){stage=st;cur=curve(sizes[st]);if(st===0){shown=[];last=-1}}
   const ix=Math.floor(t*Mx);let g=0;while(last!==ix&&g++<Mx){last=(last+1+Mx)%Mx;shown[last]=cur[last]}
   x.clearRect(0,0,W,H);x.lineWidth=3;x.shadowBlur=12;x.shadowColor='#ffe83d';x.strokeStyle='#ffe83d';x.beginPath();let pen=false;
