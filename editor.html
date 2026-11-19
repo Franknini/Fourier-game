@@ -466,7 +466,7 @@ function imTrace(E,w,h){const vis=new Uint8Array(w*h),N8=[[1,0],[0,1],[-1,0],[0,
 let imT=0;function imSched(){clearTimeout(imT);imT=setTimeout(imRun,70)}
 function imRun(){if(!IM||IM.step!=2)return;const need=$('#imode').value=='line'?700:PMAX;if(IM.pm!==need){imGray(need);imLayout()}if($('#imode').value=='line'){imRunLine();return}if($('#icol').checked){imRunColor();return}const mode=$('#imode').value,sens=+$('#ithr').value,bl=+$('#iblur').value,tol=+$('#isimp').value/10,minL=+$('#imin').value,mxs=+$('#imax').value,w=IM.pw,h=IM.ph,g=imBlur(IM.g,w,h,bl),E=mode=='edge'?imThin(imEdge(g,w,h,sens),w,h):imSil(g,w,h,sens,$('#iinv').checked);
  const len=p=>{let s=0;for(let i=1;i<p.length;i++)s+=Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]);return s};
- const R=imTrace(E,w,h).map(c=>({raw:c.p,closed:c.closed,len:len(c.p)})).filter(c=>c.len>=minL).sort((a,b)=>b.len-a.len).slice(0,mxs).map(c=>{let p=c.closed?rdp([...c.raw,c.raw[0]],tol):rdp(c.raw,tol);if(c.closed&&p.length>2)p.pop();return{p,raw:c.raw,closed:c.closed&&p.length>=3}}).filter(c=>c.p.length>=2);
+ const R=imTrace(E,w,h).map(c=>({raw:c.p,closed:c.closed,len:len(c.p)})).filter(c=>c.len>=minL).sort((a,b)=>b.len-a.len).slice(0,mxs).map(c=>{let p=imSimp(c.raw,c.closed,tol);if(c.closed&&p.length>2)p.pop();return{p,raw:c.raw,closed:c.closed&&p.length>=3}}).filter(c=>c.p.length>=2);
  IM.res=R;imDraw();$('#ist').textContent=R.length+' 筆線條・'+R.reduce((s,r)=>s+r.p.length,0)+' 點'+(R.length?'':'（沒偵測到，請調高靈敏度）')}
 ['#imode','#iinv','#ithr','#iblur','#isimp','#imin','#imax','#icol','#icn','#icml','#ibg','#ibd'].forEach(s=>$(s).addEventListener('input',imSched));
 $('#inext').onclick=()=>{imGray();IM.step=2;IM.res=[];$('#ic1').hidden=true;$('#ic2').hidden=false;$('#itl').textContent='匯入圖片：轉成線條';imLayout();imRun()};
@@ -474,7 +474,7 @@ $('#iback').onclick=()=>{IM.step=1;$('#ic1').hidden=false;$('#ic2').hidden=true;
 function imSetUL(){const s=90/Math.max(IM.pw,IM.ph);UL={img:IM.cc,cx:50,cy:50,w0:IM.pw*s,h0:IM.ph*s,m:[1,0,0,1]};$('#ula').checked=true;$('#uls').value=100;$('#ulv').checked=true;$('#upan').closest('details').open=true;if(+$('#ulo').value>60)$('#ulo').value=40}
 $('#iul1').onclick=()=>{imGray();imSetUL();imClose();draw();$('#dst').textContent='已設為描圖底圖，可在右側「描圖底圖」調整透明度、大小與位置'};
 $('#iadd').onclick=()=>{const R=IM.res;if(!R||!R.length){$('#ist').textContent='沒有可加入的線條，請調整參數';return}push();if($('#iclr').checked)shapes=[];const s=90/Math.max(IM.pw,IM.ph),n0=shapes.length,crv=$('#icrv').checked,tol=+$('#isimp').value/10,U=q=>[Math.round(((q[0]+.5-IM.pw/2)*s+50)*10)/10,Math.round(((q[1]+.5-IM.ph/2)*s+50)*10)/10];
- R.forEach(r=>{let p=r.p,closed=r.closed;if(crv){let a=closed?rdp([...r.raw,r.raw[0]],tol*2.2):rdp(r.raw,tol*2.2);if(closed&&a.length>2)a.pop();if(a.length>=3){p=a}}shapes.push({t:crv&&p.length>=3?'curve':'poly',p:p.map(U),closed:closed&&p.length>=3,c:r.c!=null?r.c:col})});
+ R.forEach(r=>{let p=r.p,closed=r.closed;if(crv){let a=imSimp(r.raw,closed,tol*2.2);if(closed&&a.length>2)a.pop();if(a.length>=3){p=a}}shapes.push({t:crv&&p.length>=3?'curve':'poly',p:p.map(U),closed:closed&&p.length>=3,c:r.c!=null?r.c:col})});
  const ids=shapes.map((_,i)=>i).slice(n0);if($('#ikeep').checked)imSetUL();setMS(ids,ids.length?ids[ids.length-1]:-1);imClose();draw();out();$('#dst').textContent='已加入 '+R.length+' 筆線條，可以繼續微調'};
 $('#ix').onclick=imClose;
 (()=>{const el=$('#mc');el.addEventListener('focus',()=>{el.dataset.prev=el.value});el.addEventListener('mousedown',()=>fillCats());el.addEventListener('change',()=>{if(el.value=='__new__'){const v=(prompt('輸入新類別名稱')||'').trim();setCat(v||el.dataset.prev||'')}el.dataset.prev=el.value;out()})})();
@@ -558,7 +558,7 @@ function imRunColor(){if(!IM||IM.step!=2)return;const w=IM.pw,h=IM.ph,k=+$('#icn
    const f=[];runs.forEach(r=>{const l=f[f.length-1];if(l&&l.c==r.c&&!l.wrap&&!r.wrap){l.e=r.e}else f.push({...r})});if(cyc&&f.length>1&&f[0].c==f[f.length-1].c&&!f[0].wrap&&!f[f.length-1].wrap){const l=f.pop();f[0]={s:l.s,e:f[0].e,c:f[0].c,wrap:true}}runs=f}
   if(runs.length==1){all.push({raw:P,closed:ch.closed,len:plen(P),c:runs[0].c});return}
   runs.forEach((r,i)=>{let seg;if(r.wrap){seg=[...P.slice(r.s),...P.slice(0,r.e+1)]}else seg=P.slice(r.s,r.e+1);const nx=runs[(i+1)%runs.length];if(i<runs.length-1||cyc){const q=nx.wrap?P[nx.s]:P[nx.s];if(!(i==runs.length-1&&!cyc))seg.push(q)}all.push({raw:seg,closed:false,len:plen(seg),c:r.c})})});
- all.sort((a,b)=>b.len-a.len);all=all.slice(0,mxs);const R=all.map(c=>{let p=c.closed?rdp([...c.raw,c.raw[0]],tol):rdp(c.raw,tol);if(c.closed&&p.length>2)p.pop();return{p,raw:c.raw,closed:c.closed&&p.length>=3,c:c.c}}).filter(c=>c.p.length>=2);
+ all.sort((a,b)=>b.len-a.len);all=all.slice(0,mxs);const R=all.map(c=>{let p=imSimp(c.raw,c.closed,tol);if(c.closed&&p.length>2)p.pop();return{p,raw:c.raw,closed:c.closed&&p.length>=3,c:c.c}}).filter(c=>c.p.length>=2);
  IM.res=R;imDraw();const used=new Set(R.map(r=>r.c)).size;$('#ist').textContent=R.length+' 筆線條・'+R.reduce((s,r)=>s+r.p.length,0)+' 點・'+used+' 種顏色'+(R.length?'':'（沒偵測到，請降低單色最小線長）')}
 HINT.cut='拖曳畫一條分割線，鬆手後線消失，被劃到的線條在交點處截斷。有選取時只截斷選取的。';
 
@@ -768,6 +768,8 @@ function rcFill(){const cnt={};shapes.forEach(s=>{if(s.hid)return;const k=CN(s.c
 $('#rcdd').addEventListener('toggle',()=>{if($('#rcdd').open)rcFill()});
 $('#rcb').onclick=()=>{const f=$('#rcf').value,t=+$('#rct').value;if(f===''){$('#dst').textContent='畫布上沒有可換色的圖形';return}const from=+f,only=$('#rcs').checked?SEL():null;let n=0;push();shapes.forEach((s,i)=>{if(s.hid||CN(s.c)!==from)return;if(only&&!only.includes(i))return;s.c=t;n++});if(!n){hist.pop();$('#dst').textContent='沒有符合的筆畫';return}draw();out();$('#dst').textContent='已把 '+n+' 筆的「'+COLN[from]+'」換成「'+COLN[t]+'」'};
 
+function imSmooth(P,closed){const n=P.length;if(n<5)return P;const w=[1,2,3,2,1],r=2,out=[];for(let i=0;i<n;i++){if(!closed&&(i<r||i>=n-r)){out.push(P[i]);continue}let sx=0,sy=0,sw=0;for(let k=-r;k<=r;k++){let j=i+k;if(closed)j=(j%n+n)%n;else if(j<0||j>=n)continue;const ww=w[k+r];sx+=P[j][0]*ww;sy+=P[j][1]*ww;sw+=ww}out.push([sx/sw,sy/sw])}return out}
+function imSimp(raw,closed,tol){const t=Math.max(tol,.85),S=imSmooth(raw,closed);return closed?rdp([...S,S[0]],t):rdp(S,t)}
 function imRuns(P,col,closed,minL){const n=P.length,dl=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);let runs=[],s0=0;for(let i=1;i<=n;i++){if(i==n||col[i]!=col[i-1]){runs.push({s:s0,e:i-1,c:col[i-1]});s0=i}}
  if(closed&&runs.length>1&&runs[0].c==runs[runs.length-1].c){const l=runs.pop();runs[0]={s:l.s,e:runs[0].e,c:runs[0].c,wrap:true}}
  const rl=r=>{let s=0;if(r.wrap){for(let i=r.s+1;i<n;i++)s+=dl(P[i],P[i-1]);for(let i=1;i<=r.e;i++)s+=dl(P[i],P[i-1])}else for(let i=r.s+1;i<=r.e;i++)s+=dl(P[i],P[i-1]);return s};
@@ -784,7 +786,7 @@ function imRunLine(){const w=IM.pw,h=IM.ph,px=IM.px,sens=+$('#ithr').value,tol=+
  const plen=p=>{let s=0;for(let i=1;i<p.length;i++)s+=Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]);return s};let all=[];
  chs.forEach(ch=>{const P=ch.p;if(P.length<2||plen(P)<mn)return;let col=P.map(q=>pal(q[0],q[1]));const sm=col.slice();for(let i=0;i<col.length;i++){const c={};for(let d=-3;d<=3;d++){const k=col[Math.min(col.length-1,Math.max(0,i+d))];c[k]=(c[k]||0)+1}let b=col[i],bc=0;for(const k in c)if(c[k]>bc){bc=c[k];b=+k}sm[i]=b}
   imRuns(P,sm,ch.closed,minRun).forEach(s=>all.push({raw:s.raw,closed:s.closed,c:s.c,len:plen(s.raw)}))});
- all.sort((a,b)=>b.len-a.len);all=all.slice(0,Math.max(mxs,1));const R=all.map(c=>{let p=c.closed?rdp([...c.raw,c.raw[0]],tol):rdp(c.raw,tol);if(c.closed&&p.length>2)p.pop();return{p,raw:c.raw,closed:c.closed&&p.length>=3,c:c.c}}).filter(c=>c.p.length>=2);
+ all.sort((a,b)=>b.len-a.len);all=all.slice(0,Math.max(mxs,1));const R=all.map(c=>{let p=imSimp(c.raw,c.closed,tol);if(c.closed&&p.length>2)p.pop();return{p,raw:c.raw,closed:c.closed&&p.length>=3,c:c.c}}).filter(c=>c.p.length>=2);
  IM.res=R;imDraw();const used=new Set(R.map(r=>r.c)).size;$('#ist').textContent=R.length+' 筆線條・'+R.reduce((s,r)=>s+r.p.length,0)+' 點・'+used+' 種顏色'+(R.length?'':'（沒偵測到，請調高靈敏度）')}
 
 /* ===== multiple canvases (tabs) ===== */
