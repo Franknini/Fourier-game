@@ -78,11 +78,17 @@ body.cad #tabs button{padding:2px 10px;font-size:13px}
 </style></head><body>
 <h1>題庫編輯器</h1>
 <small id="intro">文字題、圖庫可直接改文字；「繪製圖形」可用工具畫出題庫圖形並輸出一行格式。改完按「複製全部」，到 GitHub 開啟同名檔案，按鉛筆圖示編輯，全選貼上，再按 Commit changes。</small>
-<div class="row" id="tabs"><button id="tw" class="on">文字題（words.txt）</button><button id="ts" class="g">圖庫（shapes.json）</button><button id="td" class="g">繪製圖形</button></div>
+<div class="row" id="tabs"><button id="tw" class="on">文字題（words.txt）</button><button id="ts" class="g">圖庫（shapes.json）</button><button id="tr" class="g">審核上傳</button><button id="td" class="g">繪製圖形</button></div>
 <div id="tv"><div class="ed"><pre id="hl"></pre><textarea id="ta" spellcheck="false" wrap="off" autocomplete="off" autocapitalize="off"></textarea></div>
 <div class="row"><button id="cp">複製全部</button><button id="dl" class="g">下載檔案</button><button id="rl" class="g">重新載入線上版本</button><span id="st"></span></div>
 <div id="msgs"></div>
 <details id="bulk" class="bk"><summary>＋ 貼上多題整理區（自動偵測重複，逐題加入或覆蓋）</summary><textarea id="bk" spellcheck="false" wrap="off" placeholder="把一題或多題的格式貼在這裡，每行一題。圖庫分頁貼 JSON 一行一題，文字題分頁貼「名稱|別名,難度,類別」。"></textarea><div class="row"><button id="bkAll">全部加入</button><button id="bkRep" class="g" hidden>全部覆蓋</button><button id="bkClr" class="g">清空輸入框</button><span id="bks"></span></div><div id="bkl"></div></details></div>
+<div id="rv" hidden>
+<div class="row"><button id="rgo">Google 登入</button><button id="rso" class="g" hidden>登出</button><span id="rus" style="color:var(--mu)"></span></div>
+<small id="rhint" style="color:var(--mu);display:block;margin-bottom:6px">用管理員的 Google 帳號登入，就能審核玩家上傳的圖。登入後這裡會顯示你的 UID，把它貼到 Firebase 規則的管理員位置。</small>
+<div class="row"><button id="rre" class="g">重新整理</button><span id="rst"></span></div>
+<div id="rlist"></div>
+</div>
 <div id="dw" hidden>
  <div id="rb"><div class="row eo" id="acts"></div><div class="row eo" id="pal"></div><div class="row" id="demo" hidden><button data-d="rw" title="倒退（←）">⏪ 倒退</button><button data-d="pp" title="暫停／繼續（空白鍵）">⏯ 暫停</button><button data-d="ff" title="快進（→）">⏩ 快進</button><button class="g" data-d="end" title="結束演示（Esc）">⏹ 結束</button><label class="ck"><input type="checkbox" id="dcc" checked>顯示圓</label><span id="dsp"></span></div></div>
  <div class="row tl eo" id="tools"></div>
@@ -165,10 +171,10 @@ function render(){const f=F[cur],ta=$('#ta'),t=ta.value;f.val=t;const errs=f.v(t
  $('#st').textContent=ne?'❌ '+ne+' 個錯誤'+(nw?'、'+nw+' 個提醒':''):(nw?'⚠ '+nw+' 個提醒':'✓ 沒問題');
  $('#msgs').innerHTML=errs.map(e=>'<div class="'+e.t+'" data-l="'+e.l+'">第 '+(e.l+1)+' 行：'+esc(e.m)+'</div>').join('')||'<div class="ok">✓ 沒有發現問題</div>';fillCats();if(typeof bkRender=='function'&&$('#bk')&&$('#bk').value.trim())bkRender()}
 function load(k){fetch(F[k].name+'?'+Date.now()).then(r=>r.ok?r.text():Promise.reject()).then(t=>{F[k].val=t;if(cur==k){$('#ta').value=t;render()}fillCats()}).catch(()=>{if(cur==k)$('#st').textContent='無法從線上載入（直接開檔案時正常），可以自己貼上內容'})}
-function tab(k){if(cur!='d'){F[cur].val=$('#ta').value;BKS[cur]=$('#bk').value}document.body.classList.toggle('cad',k=='d');if(k=='d'){fillCats();nameCheck();cur='d';$('#tv').hidden=true;$('#dw').hidden=false;$('#tw').className='g';$('#ts').className='g';$('#td').className='on';resizeC();return}
+function tab(k){if(cur!='d'&&cur!='r'){F[cur].val=$('#ta').value;BKS[cur]=$('#bk').value}document.body.classList.toggle('cad',k=='d');$('#tr').className=k=='r'?'on':'g';$('#rv').hidden=k!='r';if(k=='r'){cur='r';$('#tv').hidden=true;$('#dw').hidden=true;$('#tw').className='g';$('#ts').className='g';$('#td').className='g';if(window.ADM)ADM.show();return}if(k=='d'){fillCats();nameCheck();cur='d';$('#tv').hidden=true;$('#dw').hidden=false;$('#tw').className='g';$('#ts').className='g';$('#td').className='on';resizeC();return}
  cur=k;$('#tv').hidden=false;$('#dw').hidden=true;$('#tw').className=k=='w'?'on':'g';$('#ts').className=k=='s'?'on':'g';$('#td').className='g';$('#ta').value=F[k].val;render();$('#bk').value=BKS[k];bkRender()}
 $('#ta').addEventListener('input',render);$('#ta').addEventListener('scroll',()=>{$('#hl').scrollTop=$('#ta').scrollTop;$('#hl').scrollLeft=$('#ta').scrollLeft});
-$('#tw').onclick=()=>tab('w');$('#ts').onclick=()=>tab('s');$('#td').onclick=()=>tab('d');$('#rl').onclick=()=>load(cur);
+$('#tr').onclick=()=>tab('r');$('#tw').onclick=()=>tab('w');$('#ts').onclick=()=>tab('s');$('#td').onclick=()=>tab('d');$('#rl').onclick=()=>load(cur);
 $('#msgs').onclick=e=>{const d=e.target.closest('[data-l]');if(!d)return;const ta=$('#ta'),l=+d.dataset.l,ls=ta.value.split('\n');let pos=0;for(let i=0;i<l;i++)pos+=ls[i].length+1;ta.focus();ta.setSelectionRange(pos,pos+ls[l].length);ta.scrollTop=Math.max(0,(l-3)*22)};
 $('#cp').onclick=()=>{const ta=$('#ta');const ok=()=>$('#st').textContent='已複製，可以貼到 GitHub 了';const fb=()=>{ta.focus();ta.select();try{document.execCommand('copy')?ok():$('#st').textContent='請長按全選後自己複製'}catch(e){$('#st').textContent='請長按全選後自己複製'}};try{navigator.clipboard.writeText(ta.value).then(ok,fb)}catch(e){fb()}};
 $('#dl').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([$('#ta').value],{type:'text/plain'}));a.download=F[cur].name;a.click()};
@@ -191,7 +197,7 @@ function samp(sh){const p=sh.p;switch(sh.t){case'dot':return[p[0]];case'line':re
 function snapPt(u,from){let q=u.slice();const ort=!NS&&from&&(SH||$('#oort').checked);
  if(ort){const dx=u[0]-from[0],dy=u[1]-from[1];q=Math.abs(dx)>=Math.abs(dy)?[u[0],from[1]]:[from[0],u[1]]}
  if(from&&NB&&+NB>0){const dx=q[0]-from[0],dy=q[1]-from[1],L=Math.hypot(dx,dy)||1;return[from[0]+dx/L*+NB,from[1]+dy/L*+NB]}
- if(!ort&&!NS){if($('#op').checked){let best=3.2/z,bp=null;shapes.forEach((s,i)=>{if(drag&&drag.si===i)return;s.p.forEach(pt=>{const d=Math.hypot(pt[0]-u[0],pt[1]-u[1]);if(d<best){best=d;bp=pt}})});if(bp)return bp.slice()}
+ if(!ort&&!NS){if($('#op').checked){let best=3.2/z,bp=null;shapes.forEach((s,i)=>{const own=drag&&drag.si===i;if(own&&drag.k!='pt')return;s.p.forEach((pt,j)=>{if(own&&drag.pi===j)return;const d=Math.hypot(pt[0]-u[0],pt[1]-u[1]);if(d<best){best=d;bp=pt}})});if(draft&&draft.p&&draft.p.length>1&&['poly','curve','arc'].includes(draft.t))draft.p.slice(0,-1).forEach(pt=>{const d=Math.hypot(pt[0]-u[0],pt[1]-u[1]);if(d<best){best=d;bp=pt}});if(bp)return bp.slice()}
   if(from&&$('#oang').checked){const dx=u[0]-from[0],dy=u[1]-from[1],L=Math.hypot(dx,dy),a=Math.round(Math.atan2(dy,dx)/(Math.PI/4))*(Math.PI/4);q=[from[0]+L*Math.cos(a),from[1]+L*Math.sin(a)]}}
  if(!ort&&!NS&&$('#og').checked)q=[Math.round(q[0]/5)*5,Math.round(q[1]/5)*5];return q}
 function pos(e){const r=cv.getBoundingClientRect();return[P2U((e.clientX-r.left-tx)/z),P2U((e.clientY-r.top-ty)/z)]}
@@ -891,4 +897,46 @@ function ACT2(a){const sh=shapes[selI];
  return 0}
 
 $('#dh').textContent=HINT.sel;resizeC();load('w');load('s');render();out();
-</script></body></html>
+</script><script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+import{getDatabase,ref,get,set,update,remove}from"https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js";
+import{getAuth,onAuthStateChanged,signInWithPopup,GoogleAuthProvider,signOut}from"https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js";
+const app=initializeApp({apiKey:"AIzaSyBxM53Ez9o-d3Eptw0jIMPpBKjI3XzVjKY",authDomain:"fourier-a6fad.firebaseapp.com",databaseURL:"https://fourier-a6fad-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"fourier-a6fad",appId:"1:261825878308:web:83792ab6407d1fb043bbb1"});
+const db=getDatabase(app),auth=getAuth(app),Q=s=>document.querySelector(s);
+const PAL=['#ff3b4e','#ff9a2e','#ffe83d','#47ff8a','#3d8bff','#6a5cff','#c04dff','#9aa0b4','#b5763f','#f2e0b8','#ffffff','#19f3ff','#ff3df0','#ffe83d','#47ff8a','#ff8a3d'];
+const E=t=>String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+let U=null,busy=0;
+const pf=fm=>{try{const o=JSON.parse(String(fm).replace(/,\s*$/,''));return o&&Array.isArray(o.s)&&o.s.length?o:null}catch(e){return null}};
+function paint(c,o){const W=c.width,x=c.getContext('2d');let a=1e9,b=1e9,e=-1e9,f=-1e9;o.s.forEach(t=>t.forEach(q=>{a=Math.min(a,q[0]);b=Math.min(b,q[1]);e=Math.max(e,q[0]);f=Math.max(f,q[1])}));const k=W*.84/Math.max(e-a,f-b,1),ox=(W-(e-a)*k)/2,oy=(W-(f-b)*k)/2;x.clearRect(0,0,W,W);x.lineCap=x.lineJoin='round';x.lineWidth=Math.max(2,W/45);o.s.forEach((t,i)=>{x.strokeStyle=x.fillStyle=PAL[o.k&&o.k[i]!=null?o.k[i]:11+i%5]||'#fff';if(t.length==1){x.beginPath();x.arc(ox+(t[0][0]-a)*k,oy+(t[0][1]-b)*k,x.lineWidth*.9,0,7);x.fill();return}x.beginPath();t.forEach((q,j)=>j?x.lineTo(ox+(q[0]-a)*k,oy+(q[1]-b)*k):x.moveTo(ox+(q[0]-a)*k,oy+(q[1]-b)*k));x.stroke()})}
+const mid=()=>'m'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+async function mail(uid,ti,n,msg){await set(ref(db,'mail/'+uid+'/'+mid()),{t:Date.now(),ti,n,msg:msg||'',r:0})}
+function card(r,up){const d=document.createElement('div');d.className='rc';d.style.cssText='border:1px solid #2c3060;border-radius:10px;padding:8px;margin:8px 0;background:var(--pn);display:flex;gap:10px;flex-wrap:wrap';
+ const o=pf(up&&up.fm);const cv=document.createElement('canvas');cv.width=cv.height=240;cv.style.cssText='width:150px;height:150px;background:#0b0b1e;border-radius:8px;flex:none';if(o)paint(cv,o);
+ const f=document.createElement('div');f.style.cssText='flex:1;min-width:210px;display:flex;flex-direction:column;gap:6px';
+ f.innerHTML='<div style="color:var(--mu);font-size:13px">作者：'+E(r.au||'（未填）')+'　上傳：'+E(new Date(r.t||0).toLocaleString('zh-TW'))+'　筆畫：'+(o?o.s.length:'?')+'</div>'+
+ '<div class="row" style="margin:0"><label>題名 <input data-f="n" value="'+E(o&&o.n||r.n)+'" style="width:9em"></label><label>別名 <input data-f="al" value="'+E((o&&o.al||[]).join(','))+'" placeholder="逗號分隔" style="width:9em"></label></div>'+
+ '<div class="row" style="margin:0"><label>星數 <select data-f="lv">'+[0,1,2,3].map(v=>'<option value="'+v+'"'+((o?o.lv|0:r.lv|0)==v?' selected':'')+'>'+v+'</option>').join('')+'</select></label><label>類別 <input data-f="c" list="rcats" value="'+E(o&&o.c&&o.c!=='自訂'?o.c:'')+'" placeholder="必填" style="width:8em"></label></div>'+
+ '<div class="row" style="margin:0"><input data-f="msg" placeholder="給上傳者的訊息（退回時建議填寫）" style="flex:1;min-width:10em"></div>'+
+ '<div class="row" style="margin:0"><button data-a="ok">通過</button><button data-a="no" class="g">退回</button><button data-a="cp" class="g">複製格式</button><span data-r style="color:var(--warn)"></span></div>';
+ d.append(cv,f);const g=k=>f.querySelector('[data-f='+k+']'),res=f.querySelector('[data-r]');
+ const build=()=>{const n=g('n').value.trim(),al=g('al').value.split(/[,，]/).map(x=>x.trim()).filter(Boolean),lv=+g('lv').value,c=g('c').value.trim();const x={n,al,lv,c,s:o.s};if(o.k)x.k=o.k;if(o.g)x.g=o.g;return x};
+ const go=async(kind)=>{if(busy)return;if(!o){res.textContent='這筆資料讀取失敗，無法審核';return}const x=build();if(kind=='ok'&&(!x.n||!x.c)){res.textContent='題名和類別都要填';return}busy=1;res.textContent='處理中…';
+  try{const base='uploads/'+r.uid+'/'+r.id;
+   if(kind=='ok'){await set(ref(db,'library/'+r.id),{id:r.id,uid:r.uid,n:x.n,lv:x.lv,c:x.c,au:r.au||'',fm:JSON.stringify(x)+',',t:Date.now()});await update(ref(db,base),{st:'approved'});await remove(ref(db,'review/'+r.id));await mail(r.uid,'審核通過',x.n,g('msg').value.trim()||'已加入遊戲題庫，感謝你的投稿！')}
+   else{await update(ref(db,base),{st:'rejected',msg:g('msg').value.trim()});await remove(ref(db,'review/'+r.id));await mail(r.uid,'審核未通過',g('n').value.trim()||r.n,g('msg').value.trim()||'這張圖暫時不適合加入題庫')}
+   d.remove();Q('#rst').textContent=kind=='ok'?'已通過「'+x.n+'」':'已退回「'+r.n+'」'}catch(e){res.textContent='失敗：'+(e&&e.code||e&&e.message||e)}busy=0};
+ f.onclick=e=>{const a=e.target.dataset&&e.target.dataset.a;if(!a)return;if(a=='cp'){if(!o)return;const t=JSON.stringify(build())+',';navigator.clipboard.writeText(t).then(()=>{res.textContent='已複製（可貼到 shapes.json）'},()=>{res.textContent='複製失敗'})}else go(a)};return d}
+async function list(){const L=Q('#rlist'),st=Q('#rst');L.textContent='';if(!U){st.textContent='';return}st.textContent='載入中…';
+ let rv;try{rv=(await get(ref(db,'review'))).val()||{}}catch(e){st.textContent='';L.innerHTML='<div style="color:var(--bad)">讀取失敗：'+E(e&&e.code||e&&e.message||e)+'。若是權限不足，代表這個帳號還不是管理員。</div>';return}
+ const rs=Object.values(rv).filter(r=>r&&r.uid&&r.id).sort((a,b)=>(a.t||0)-(b.t||0));
+ if(!document.getElementById('rcats')){const dl=document.createElement('datalist');dl.id='rcats';document.body.append(dl)}
+ try{const sj=await fetch('shapes.json?'+Date.now()).then(r=>r.json());const cs=[...new Set(sj.map(o=>o.c).filter(Boolean))];Q('#rcats').innerHTML=cs.map(c=>'<option value="'+E(c)+'">').join('')}catch(e){}
+ st.textContent=rs.length?'待審核 '+rs.length+' 張':'沒有待審核的圖';
+ for(const r of rs){let up=null;try{up=(await get(ref(db,'uploads/'+r.uid+'/'+r.id))).val()}catch(e){}L.append(card(r,up))}}
+function ui(){Q('#rgo').hidden=!!U;Q('#rso').hidden=!U;Q('#rus').textContent=U?U.email+'　UID：'+U.uid:'';Q('#rhint').hidden=!!U&&false}
+window.ADM={show(){ui();list()}};
+Q('#rgo').onclick=async()=>{try{await signInWithPopup(auth,new GoogleAuthProvider())}catch(e){Q('#rst').textContent='登入失敗：'+(e&&e.code||e&&e.message||e)+'（直接開檔案時無法登入，請從網站網址開啟）'}};
+Q('#rso').onclick=()=>signOut(auth);Q('#rre').onclick=list;
+onAuthStateChanged(auth,u=>{U=u&&!u.isAnonymous?u:null;ui();if(!Q('#rv').hidden)list()});
+</script>
+</body></html>
